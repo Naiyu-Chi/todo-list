@@ -85,6 +85,7 @@
      * 4. 代辦事項標記完成
      * 5. 代辦事項排序 (日期時間)
      * 6. 代辦事項搜尋
+     * 7. 修正選擇日期bug
      */ 
   import { ref, reactive, computed } from 'vue';
   import { Edit, Delete } from '@element-plus/icons-vue';
