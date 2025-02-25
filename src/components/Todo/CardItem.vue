@@ -5,7 +5,7 @@
         date: String, 
         items: Object,
         deleteTodo: Function,  
-        editTodo: Function,    
+        openDialogForEdit: Function,    
         toggleDone: Function
     });
 </script>
@@ -20,7 +20,7 @@
                 <span class="todo-item" :style="{ textDecoration: todo.done ? 'line-through' : 'none' }" @click="toggleDone(todo)">
                     {{ todo.name }}
                 </span>
-                <Edit class="edit-icon" @click="editTodo(todo)" color="#409efc" />
+                <Edit class="edit-icon" @click="openDialogForEdit(todo)" color="#409efc" />
                 <el-popconfirm
                     title="確認刪除該項目?"
                     @confirm="deleteTodo(todo)"
@@ -42,7 +42,7 @@
             <span class="todo-item" :style="{ textDecoration: todo.done ? 'line-through' : 'none' }" @click="toggleDone(todo)">
                 {{ todo.name }}
             </span>
-            <Edit class="edit-icon" @click="editTodo(todo)" color="#409efc" />
+            <Edit class="edit-icon" @click="openDialogForEdit(todo)" color="#409efc" />
             <el-popconfirm
                 title="確認刪除該項目?"
                 @confirm="deleteTodo(todo)"

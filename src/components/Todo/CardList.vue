@@ -6,7 +6,7 @@
             required: true
         }, 
         deleteTodo: Function,  
-        editTodo: Function,    
+        openDialogForEdit: Function,    
         toggleDone: Function
     });
 </script>
@@ -18,7 +18,7 @@
               :date="date.toString()" 
               :items="items"
               :deleteTodo="deleteTodo" 
-              :editTodo="editTodo"
+              :openDialogForEdit="openDialogForEdit"
               :toggleDone="toggleDone" />
         </div>
         <div v-if="Object.keys(filteredTodosByDate).length === 0" class="empty-state">

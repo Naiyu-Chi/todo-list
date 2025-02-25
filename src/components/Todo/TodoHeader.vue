@@ -1,16 +1,15 @@
 <script setup>
-import { ElInput, ElButton } from 'element-plus';
+    import { ElInput, ElButton } from 'element-plus';
 
-// 用defineModal接收父元件傳遞的modelValue，並進行雙向綁定
-const keyword = defineModel('modelValue', {
-  type: String,
-  default: ''
-});
+    // 用defineModal接收父元件傳遞的modelValue，並進行雙向綁定
+    const keyword = defineModel('modelValue', {
+        type: String,
+        default: ''
+    });
 
-const props = defineProps({
-  openDialogForAdd: Function
-});
-
+    const props = defineProps({
+        openDialogForAdd: Function
+    });
 </script>
 
 <template>
@@ -29,26 +28,25 @@ const props = defineProps({
 </template>
 
 <style scoped>
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
+    .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
 
-h1 {
-    margin: 0;
-}
+    h1 {
+        margin: 0;
+    }
 
-.controls {
-    display: flex;
-    gap: 1rem;
-}
+    .controls {
+        display: flex;
+        gap: 1rem;
+    }
 
-.search-input {
-    width: 250px;
-}
-
+    .search-input {
+        width: 250px;
+    }
 </style>
