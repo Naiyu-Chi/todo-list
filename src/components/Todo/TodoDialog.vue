@@ -1,37 +1,37 @@
 <script setup>
-import {
-  ElButton,
-  ElDialog,
-  ElInput,
-  ElDatePicker,
-  ElForm,
-  ElFormItem,
-} from 'element-plus';
+    import {
+        ElButton,
+        ElDialog,
+        ElInput,
+        ElDatePicker,
+        ElForm,
+        ElFormItem,
+    } from 'element-plus';
 
-// 使用 defineModel 來創建雙向綁定
-const visible = defineModel('visible', {
-  type: Boolean,
-  default: false
-});
+    // 使用 defineModel 來創建雙向綁定
+    const visible = defineModel('visible', {
+        type: Boolean,
+        default: false
+    });
 
-// 其他 props
-const props = defineProps({
-  title: String,
-  form: Object,
-  isEditing: Boolean
-});
+    // 其他 props
+    const props = defineProps({
+        title: String,
+        form: Object,
+        isEditing: Boolean
+    });
 
-// 簡化後的 emits
-const emit = defineEmits(['cancel', 'confirm']);
+    // 簡化後的 emits
+    const emit = defineEmits(['cancel', 'confirm']);
 
-// Methods
-function handleCancel() {
-  emit('cancel');
-}
+    // Methods
+    function handleCancel() {
+        emit('cancel');
+    }
 
-function handleConfirm() {
-  emit('confirm');
-}
+    function handleConfirm() {
+        emit('confirm');
+    }
 </script>
   
 <template>
@@ -72,9 +72,9 @@ function handleConfirm() {
 </template>
   
 <style scoped>
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
+    .dialog-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
 </style>

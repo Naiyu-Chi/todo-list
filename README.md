@@ -1,20 +1,19 @@
-# todo-list
+# Todo List Application
 
-This template should help get you started developing with Vue 3 in Vite.
+This project is a demo of a todo list application.
 
-## Recommended IDE Setup
+## Project Features
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
+- Add Todo Item
+- Edit Todo Item
+- Delete Todo Item
+- Toggle Todo Item
+- All items are sorted by date
+- Filter items by search keyword
 
 ## Project Setup
+
+To set up the project, run the following command:
 
 ```sh
 npm install
@@ -22,17 +21,23 @@ npm install
 
 ### Compile and Hot-Reload for Development
 
+To compile and hot-reload the project for development, run:
+
 ```sh
 npm run dev
 ```
 
 ### Type-Check, Compile and Minify for Production
 
+To type-check, compile, and minify the project for production, run:
+
 ```sh
 npm run build
 ```
 
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
+
+To run unit tests, use the following command:
 
 ```sh
 npm run test:unit
