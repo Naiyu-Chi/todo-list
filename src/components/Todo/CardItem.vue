@@ -1,7 +1,6 @@
 <script setup>
     import { Edit, Delete } from '@element-plus/icons-vue';
     import { ElPopconfirm } from 'element-plus';
-    import { defineProps } from 'vue';
     const props = defineProps({
         date: String, 
         items: Object,

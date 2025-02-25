@@ -9,8 +9,8 @@
     ElForm,
     ElFormItem,
   } from 'element-plus';
-  import CardList from './CardList.vue';
-  import TodoHeader from './TodoHeader.vue';
+  import CardList from '@/components/Todo/CardList.vue';
+  import TodoHeader from '@/components/Todo/TodoHeader.vue';
 
   // Reactive variables
   const dialogFormVisible = ref(false);

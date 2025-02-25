@@ -1,5 +1,5 @@
 <script setup>
-    import CardItem from './CardItem.vue';
+    import CardItem from '@/components/Todo/CardItem.vue';
     const props = defineProps({
         filteredTodosByDate: {
             type: Object,
