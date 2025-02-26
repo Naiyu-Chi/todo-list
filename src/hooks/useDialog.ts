@@ -1,14 +1,24 @@
 import { ref, reactive } from 'vue';
 
+interface Todo {
+    id: string;
+    name: string;
+    done: boolean;
+    date: string;
+}
+
 export default function useDialog() {
     // 對話框狀態
-    const dialogFormVisible = ref(false);
-    const isEditing = ref(false);
-    const dialogTitle = ref('');
-    const selectedId = ref('');
+    const dialogFormVisible = ref<boolean>(false);
+    const isEditing = ref<boolean>(false);
+    const dialogTitle = ref<string>('');
+    const selectedId = ref<string>('');
 
     // 表單資料
-    const form = reactive({
+    const form = reactive<{
+        name: string;
+        date: string | null;
+    }>({
         name: '',
         date: null,
     });
@@ -16,7 +26,7 @@ export default function useDialog() {
     /**
      * 重置表單
      */
-    function resetForm() {
+    function resetForm(): void {
         form.name = '';
         form.date = null;
         selectedId.value = '';
@@ -25,7 +35,7 @@ export default function useDialog() {
     /**
      * 開啟新增對話框
      */
-    function openDialogForAdd() {
+    function openDialogForAdd(): void {
         dialogTitle.value = '新增待辦事項';
         isEditing.value = false;
         resetForm();
@@ -34,9 +44,9 @@ export default function useDialog() {
 
     /**
      * 開啟編輯對話框
-     * @param {Object} todo - 待編輯的待辦事項
+     * @param {Todo} todo - 待編輯的待辦事項
      */
-    function openDialogForEdit(todo) {
+    function openDialogForEdit(todo: Todo): void {
         dialogTitle.value = '編輯待辦事項';
         isEditing.value = true;
         selectedId.value = todo.id;
@@ -48,7 +58,7 @@ export default function useDialog() {
     /**
      * 關閉對話框
      */
-    function closeDialog() {
+    function closeDialog(): void {
         dialogFormVisible.value = false;
         resetForm();
     }
@@ -57,7 +67,7 @@ export default function useDialog() {
      * 獲取當前表單資料
      * @returns {Object} 表單資料
      */
-    function getFormData() {
+    function getFormData(): { name: string; date: string | null } {
         return {
             name: form.name,
             date: form.date

@@ -1,33 +1,44 @@
 import { ref, reactive, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 
-// 用於管理待辦事項的 Hook
+interface Todo {
+    id: string;
+    name: string;
+    done: boolean;
+    date: string;
+}
+
+interface TodoGroup {
+    done: Todo[];
+    notDone: Todo[];
+}
+
 export default function useTodo() {
-    const searchKeyword = ref('');
+    const searchKeyword = ref<string>('');
 
     // 初始資料
-    const todos = reactive([
-        { id: 1, name: 'Learn Vue 2', done: true, date: '2025-02-26' },
-        { id: 4, name: 'Learn Vue 3', done: false, date: '2025-02-26' },
-        { id: 2, name: 'Learn React', done: false, date: '2025-02-27' },
-        { id: 3, name: 'Build something awesome', done: false, date: '2025-02-28' },
+    const todos = reactive<Todo[]>([
+        { id: '1', name: 'Learn Vue 2', done: true, date: '2025-02-26' },
+        { id: '4', name: 'Learn Vue 3', done: false, date: '2025-02-26' },
+        { id: '2', name: 'Learn React', done: false, date: '2025-02-27' },
+        { id: '3', name: 'Build something awesome', done: false, date: '2025-02-28' },
     ]);
 
     /**
      * 根據ID查找待辦事項的索引
-     * @param {string|number} id - 待辦事項ID
+     * @param {string} id - 待辦事項ID
      * @returns {number} 索引值或-1(未找到)
      */
-    function findTodoIndex(id) {
+    function findTodoIndex(id: string): number {
         return todos.findIndex(todo => todo.id === id);
     }
 
     /**
      * 驗證待辦事項資料
-     * @param {Object} data - 待辦事項資料
+     * @param {Todo} data - 待辦事項資料
      * @returns {boolean} 資料是否有效
      */
-    function validateForm(data) {
+    function validateForm(data: Partial<Todo>): boolean {
         if (!data || !data.name || !data.date) {
             ElMessage({
                 showClose: true,
@@ -41,16 +52,16 @@ export default function useTodo() {
 
     /**
      * 添加新的待辦事項
-     * @param {Object} todo - 待辦事項對象
+     * @param {Partial<Todo>} todo - 待辦事項對象
      * @returns {boolean} 是否添加成功
      */
-    function addTodo(todo) {
+    function addTodo(todo: Partial<Todo>): boolean {
         if (!validateForm(todo)) return false;
 
         todos.push({
             id: crypto.randomUUID(),
-            name: todo.name,
-            date: todo.date,
+            name: todo.name!,
+            date: todo.date!,
             done: false,
         });
 
@@ -65,11 +76,11 @@ export default function useTodo() {
 
     /**
      * 更新現有待辦事項
-     * @param {string|number} id - 待辦事項ID
-     * @param {Object} updates - 更新的欄位
+     * @param {string} id - 待辦事項ID
+     * @param {Partial<Todo>} updates - 更新的欄位
      * @returns {boolean} 是否更新成功
      */
-    function updateTodo(id, updates) {
+    function updateTodo(id: string, updates: Partial<Todo>): boolean {
         if (!validateForm(updates)) return false;
 
         const index = findTodoIndex(id);
@@ -94,9 +105,9 @@ export default function useTodo() {
 
     /**
      * 刪除待辦事項
-     * @param {Object} todo - 待辦事項對象
+     * @param {Todo} todo - 待辦事項對象
      */
-    function deleteTodo(todo) {
+    function deleteTodo(todo: Todo): void {
         const index = findTodoIndex(todo.id);
         if (index !== -1) {
             todos.splice(index, 1);
@@ -111,9 +122,9 @@ export default function useTodo() {
 
     /**
      * 切換待辦事項完成狀態
-     * @param {Object} todo - 待辦事項對象
+     * @param {Todo} todo - 待辦事項對象
      */
-    function toggleDone(todo) {
+    function toggleDone(todo: Todo): void {
         const index = findTodoIndex(todo.id);
         if (index !== -1) {
             todos[index].done = !todos[index].done;
@@ -121,13 +132,13 @@ export default function useTodo() {
     }
 
     // 依照日期分組的待辦事項
-    const todosByDate = computed(() => {
+    const todosByDate = computed<Record<string, TodoGroup>>(() => {
         // 按日期從早到晚排序
         const sortedTodos = [...todos].sort((a, b) => {
             return a.date.localeCompare(b.date);
         });
 
-        const grouped = {};
+        const grouped: Record<string, TodoGroup> = {};
 
         sortedTodos.forEach(todo => {
             const dateKey = todo.date;
@@ -149,13 +160,13 @@ export default function useTodo() {
     });
 
     // 根據搜尋關鍵字過濾的待辦事項，並按照日期排序
-    const filteredTodosByDate = computed(() => {
+    const filteredTodosByDate = computed<Record<string, TodoGroup>>(() => {
         // 去除空白搜尋
         if (!searchKeyword.value.trim()) {
             return todosByDate.value;
         }
 
-        const filtered = {};
+        const filtered: Record<string, TodoGroup> = {};
         const keyword = searchKeyword.value.toLowerCase();
 
         Object.keys(todosByDate.value).forEach(date => {
