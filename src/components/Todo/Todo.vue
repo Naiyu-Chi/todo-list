@@ -1,8 +1,8 @@
 <script setup>
   // Hooks
   import { ElMessage } from 'element-plus';
-  import useTodo from '@/hooks/useTodo.js';
-  import useDialog from '@/hooks/useDialog.js';
+  import useTodo from '@/hooks/useTodo.ts';
+  import useDialog from '@/hooks/useDialog.ts';
   // Components
   import TodoHeader from '@/components/Todo/TodoHeader.vue';
   import CardList from '@/components/Todo/CardList.vue';
