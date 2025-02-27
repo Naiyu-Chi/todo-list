@@ -1,10 +1,16 @@
 <script setup lang="ts">
-  import 'element-plus/dist/index.css'
-  import Todo from './components/Todo/Todo.vue';
+  import TodoHeader from '@/components/Header.vue';
+  import { RouterView } from 'vue-router';
 </script>
 
 <template>
-  <Todo />
+   <TodoHeader />
+   <RouterView/>
 </template>
 
 
+<style>
+  body{
+    font-family: sans-serif;
+  }
+</style>
