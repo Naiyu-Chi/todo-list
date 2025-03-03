@@ -1,16 +1,15 @@
-<script setup lang="ts">
-  import TodoHeader from '@/components/Header.vue';
-  import { RouterView } from 'vue-router';
+<script setup>
+  import LayoutView from '@/layout/index.vue';
 </script>
 
 <template>
-   <TodoHeader />
-   <RouterView/>
+   <LayoutView />
 </template>
 
 
 <style>
   body{
     font-family: sans-serif;
+    box-sizing: border-box;
   }
 </style>

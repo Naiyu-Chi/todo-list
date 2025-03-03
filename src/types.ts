@@ -1,4 +1,3 @@
-// types.ts
 export interface CalendarDay {
     date: Date;
     formattedDate: string;
@@ -20,7 +19,4 @@ export interface Todo extends Form {
     done: boolean;
 }
 
-export interface TodoGroup {
-    done: Todo[];
-    notDone: Todo[];
-}
+

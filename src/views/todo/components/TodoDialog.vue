@@ -53,25 +53,23 @@
     <el-row :gutter="12">
       <el-col :span="12">
         <el-form-item label="開始時間" required>
-          <el-time-picker
+          <el-time-select
             v-model="form.startTime"
+            start="00:00"
+            step="00:30"
+            end="23:30"
             placeholder="選擇開始時間"
-            format="HH:mm"
-            value-format="HH:mm" 
-            :default-value="new Date(2000, 1, 1, 9, 0)"
-            style="width: 100%"
           />
         </el-form-item>
       </el-col>
       <el-col :span="12">
         <el-form-item label="結束時間" required>
-          <el-time-picker
+          <el-time-select
             v-model="form.endTime"
+            start="00:00"
+            step="00:30"
+            end="23:30"
             placeholder="選擇結束時間"
-            format="HH:mm"
-            value-format="HH:mm"
-            :default-value="new Date(2000, 1, 1, 10, 0)"
-            style="width: 100%"
           />
         </el-form-item>
       </el-col>
@@ -82,17 +80,10 @@
       <div class="dialog-footer">
         <el-button @click="handleCancel">取消</el-button>
         <el-button type="primary" @click="handleConfirm">
-          {{ isEditing ? '更新' : '新增' }}
+          {{ props.isEditing ? '更新' : '新增' }}
         </el-button>
       </div>
     </template>
   </el-dialog>
 </template>
   
-<style scoped>
-    .dialog-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-    }
-</style>

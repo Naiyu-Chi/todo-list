@@ -1,77 +1,85 @@
 <script setup>
-import { onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
-// Components
-import Calendar from './components/Calendar.vue';
-import TodoDialog from '@/views/todo/components/TodoDialog.vue';
+  import { onMounted, watch, nextTick } from 'vue';
+  // Components
+  import Calendar from './components/Calendar.vue';
+  import TodoDialog from '@/views/todo/components/TodoDialog.vue';
 
-// Custom Hooks
-import useCalendar from '@/hooks/useCalendar';
-import useDialog from '@/hooks/useDialog';
+  // Custom Hooks
+  import useCalendar from '@/hooks/useCalendar';
+  import useDialog from '@/hooks/useDialog';
 
-// Pinia store
-import { useTodoStore } from '@/stores/modules/todo';
-const todoStore = useTodoStore();
+  // Pinia store
+  import { useTodoStore } from '@/stores/modules/todo';
+  const todoStore = useTodoStore();
+  const { loadingState, addTodo, updateTodo } = todoStore;
 
-// Hooks
-const {
-  weekDays,
-  timePeriods,
-  currentMonthYear,
-  selectedDate,  
-  goToToday,
-  goToPreviousWeek,
-  goToNextWeek,
-  selectDate,
-} = useCalendar();
+  // Loading元件跟變數
+  import { ElLoading } from 'element-plus';
+  let loadingInstance = null;
 
-const {
-  dialogFormVisible,
-  isEditing,
-  dialogTitle,
-  selectedId,
-  form,
-  openDialogForAdd,
-  openDialogForEdit,
-  closeDialog,
-  getFormData
-} = useDialog();
+  // Hooks
+  const {
+    weekDays,
+    timePeriods,
+    currentMonthYear,
+    selectedDate,  
+    goToToday,
+    goToPreviousWeek,
+    goToNextWeek,
+    selectDate,
+  } = useCalendar();
 
-// Handelers
-function handleAddTask(date) {
-  openDialogForAdd(date);
-}
+  const {
+    dialogFormVisible,
+    isEditing,
+    dialogTitle,
+    selectedId,
+    form,
+    openDialogForAdd,
+    openDialogForEdit,
+    closeDialog,
+    getFormData,
+    validateForm
+  } = useDialog();
 
-function handleSelectDate(date) {
-  selectDate(date);
-}
-
-function handleDeleteTodo(id){
-  todoStore.deleteTodo(id)
-}
-
-function handleToggleTodo(id){
-  todoStore.toggleDone(id)
-}
-
-async function confirmEdit() {
-  const formData = getFormData();
-  if (isEditing.value) {
-    if (!selectedId.value) {
-      ElMessage.error('找不到要更新的項目');
-      return;
-    }
-    await todoStore.updateTodo(selectedId.value, formData);
-    closeDialog();
-  } else {
-    todoStore.addTodo(formData)
+  // Handlers
+  function handleAddTask(date, startTime) {
+    openDialogForAdd(date, startTime);
   }
-}
 
+  function handleSelectDate(date) {
+    selectDate(date);
+  }
 
-onMounted(() => {
-  todoStore.fetchTodos();
-});
+  function confirmEdit() {
+    const formData = getFormData();
+    if(validateForm()){
+      const success = isEditing.value  ? updateTodo(selectedId.value, formData) : addTodo(formData);
+      if(success){
+        closeDialog()
+      }
+    }
+  }
+
+  // onMounted(() => {
+  //   todoStore.fetchTodos();
+  // });
+
+  /**
+   * 監控fetching狀態，顯示或關閉讀取動畫
+   */
+  // watch(() => loadingState.fetching, (value) => { 
+  //   if(value){
+  //     loadingInstance = ElLoading.service({
+  //       lock: true,
+  //       text:"讀取資料中..."
+  //     })
+  //   }else{
+  //     nextTick(() => {
+  //       loadingInstance.close()
+  //     })
+  //   }
+  // }
 </script>
 
 <template>
@@ -86,9 +94,7 @@ onMounted(() => {
       @next-week="goToNextWeek"
       @go-today="goToToday"
       @select-date="handleSelectDate"
-      @add-task="handleAddTask"
-      @delete-todo="handleDeleteTodo"
-      @toggle-todo="handleToggleTodo"
+      @toggle-add="handleAddTask"
       @toggle-edit="openDialogForEdit"
     >
       <template #header-actions>

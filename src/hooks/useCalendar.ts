@@ -57,17 +57,18 @@ export default function useCalendar() {
 
     // 往前一週
     function goToPreviousWeek(): void {
-        const date = new Date(currentDate.value);
+        const date = new Date(selectedDate.value);
         date.setDate(date.getDate() - 7);
         currentDate.value = date;
+        selectedDate.value = new Date(date).toISOString().split('T')[0];
     }
 
     // 往後一週
     function goToNextWeek(): void {
-        const date = new Date(currentDate.value);
+        const date = new Date(selectedDate.value);
         date.setDate(date.getDate() + 7);
         currentDate.value = date;
-        console.log(date)
+        selectedDate.value = new Date(date).toISOString().split('T')[0];
     }
 
     // 設置選擇的日期

@@ -21,7 +21,7 @@ export const addTodo = (todo: Form) => {
  * 刪除一筆待辦事項
  * @param id 待辦事項 ID
  */
-export const deleteTodo = (id: string) => {
+export const deleteTodo = (id: string | number) => {
     return request.delete(`/api/todo/${id}`);
 };
 
@@ -29,7 +29,7 @@ export const deleteTodo = (id: string) => {
  * 切換待辦事項完成狀態
  * @param id 待辦事項 ID
  */
-export const toggleTodo = (id: string) => {
+export const toggleTodo = (id: string | number) => {
     return request.patch(`/api/todo/${id}`);
 };
 
@@ -38,6 +38,6 @@ export const toggleTodo = (id: string) => {
  * @param id 待辦事項 ID
  * @param todo 待更新的資料
  */
-export const updateTodo = (id: string, todo: Todo) => {
+export const updateTodo = (id: string | number, todo: Form) => {
     return request.put(`/api/todo/${id}`, todo);
 };

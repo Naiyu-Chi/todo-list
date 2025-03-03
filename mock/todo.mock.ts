@@ -2,7 +2,7 @@ import type { Todo } from "@/types";
 const timeout = 1000;
 
 let todos: Todo[] = [
-    { id: '1', name: 'Learn Vue 2', done: true, date: '2025-02-26', startTime: '09:00', endTime: '12:00' },
+    { id: '1', name: 'Learn Vue 2', done: true, date: '2025-02-26', startTime: '09:30', endTime: '12:30' },
     { id: '2', name: 'Learn Vue 3', done: false, date: '2025-02-26', startTime: '14:00', endTime: '15:00' },
     { id: '3', name: 'Learn React', done: false, date: '2025-02-27', startTime: '10:00', endTime: '12:00' },
     { id: '4', name: 'Build something awesome', done: false, date: '2025-02-28', startTime: '16:00', endTime: '20:00' }
@@ -87,13 +87,6 @@ export default [
         url: '/api/todo/:id',
         method: "PUT",
         response: ({ query, body }) => {
-            // const targetTodo = todos.find(todo => todo.id === query.id);
-            // if (targetTodo) {
-            //     targetTodo.name = body.name;
-            //     targetTodo.date = body.date;
-            // }
-            console.log(query)
-            console.log(body)
             todos = todos.map(todo => {
                 if (todo.id === query.id) {
                     return {
