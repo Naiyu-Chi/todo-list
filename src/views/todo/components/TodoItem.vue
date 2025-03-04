@@ -46,9 +46,6 @@
     function handleEdit(todo) {
         emit('edit', todo);
     }
-
-    // import { useTodoStore } from '@/stores/modules/todo';
-    // const todoStore = useTodoStore();
 </script>
   
 <style lang="scss" scoped>

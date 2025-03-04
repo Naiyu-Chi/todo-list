@@ -180,13 +180,13 @@
         flex: 1;
         min-width: 0;
         text-align: center;
-        padding: 10px;
+        padding: 8px;
         cursor: pointer;
         border-left: 1px solid #ebeef5;
     }
 
     .day-name {
-        font-size: 12px;
+        font-size: 16px;
         color: #909399;
     }
 
@@ -207,11 +207,11 @@
     }
 
     .day-column-header.today, .day-column.today {
-        background-color: #f0f9ff !important;
+        background-color: #f0f9ff;
     }
 
     .day-column-header.selected, .day-column.selected {
-        background-color: #ecf5ff !important;
+        background-color: #ecf5ff;
     }
 
     .time-grid {
@@ -241,12 +241,10 @@
     .day-columns {
         display: flex;
         flex: 1;
-        width: 100%;
     }
 
     .day-column {
         flex: 1;
-        min-width: 0;
         border-left: 1px solid #ebeef5;
         background-color: inherit;
     }

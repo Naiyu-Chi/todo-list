@@ -12,15 +12,19 @@
         isEditing: Boolean,
     });
 
-    const emit = defineEmits(['cancel', 'confirm']);
+    const emit = defineEmits(['cancel', 'confirm', 'delete']);
 
-    // Methods
+    // Handlers
     function handleCancel() {
         emit('cancel');
     }
 
     function handleConfirm() {
         emit('confirm');
+    }
+
+    function handleDelete(){
+      emit('delete')
     }
 </script>
   
@@ -57,7 +61,7 @@
             v-model="form.startTime"
             start="00:00"
             step="00:30"
-            end="23:30"
+            end="24:00"
             placeholder="選擇開始時間"
           />
         </el-form-item>
@@ -68,7 +72,7 @@
             v-model="form.endTime"
             start="00:00"
             step="00:30"
-            end="23:30"
+            end="24:00"
             placeholder="選擇結束時間"
           />
         </el-form-item>
@@ -80,8 +84,17 @@
       <div class="dialog-footer">
         <el-button @click="handleCancel">取消</el-button>
         <el-button type="primary" @click="handleConfirm">
-          {{ props.isEditing ? '更新' : '新增' }}
+          {{ isEditing ? '更新' : '新增' }}
         </el-button>
+        <el-popconfirm title="是否確認刪除?" 
+            v-if="isEditing" 
+            confirm-button-text="是"
+            cancel-button-text="否"
+            @confirm="handleDelete">
+          <template #reference>
+            <el-button type="danger">刪除</el-button>
+          </template>
+        </el-popconfirm>
       </div>
     </template>
   </el-dialog>

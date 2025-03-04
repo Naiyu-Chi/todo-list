@@ -1,5 +1,4 @@
 <script setup>
-  import { onMounted, watch, nextTick } from 'vue';
   // Components
   import Calendar from './components/Calendar.vue';
   import TodoDialog from '@/views/todo/components/TodoDialog.vue';
@@ -11,11 +10,7 @@
   // Pinia store
   import { useTodoStore } from '@/stores/modules/todo';
   const todoStore = useTodoStore();
-  const { loadingState, addTodo, updateTodo } = todoStore;
-
-  // Loading元件跟變數
-  import { ElLoading } from 'element-plus';
-  let loadingInstance = null;
+  const { addTodo, updateTodo, deleteTodo } = todoStore;
 
   // Hooks
   const {
@@ -51,6 +46,13 @@
     selectDate(date);
   }
 
+  function handleDeleteTodo(){
+    const success =  deleteTodo(selectedId.value)
+    if(success){
+      closeDialog()
+    }
+  }
+
   function confirmEdit() {
     const formData = getFormData();
     if(validateForm()){
@@ -60,26 +62,6 @@
       }
     }
   }
-
-  // onMounted(() => {
-  //   todoStore.fetchTodos();
-  // });
-
-  /**
-   * 監控fetching狀態，顯示或關閉讀取動畫
-   */
-  // watch(() => loadingState.fetching, (value) => { 
-  //   if(value){
-  //     loadingInstance = ElLoading.service({
-  //       lock: true,
-  //       text:"讀取資料中..."
-  //     })
-  //   }else{
-  //     nextTick(() => {
-  //       loadingInstance.close()
-  //     })
-  //   }
-  // }
 </script>
 
 <template>
@@ -112,6 +94,7 @@
       :isEditing="isEditing"
       @cancel="closeDialog"
       @confirm="confirmEdit"
+      @delete="handleDeleteTodo"
     />
   </div>
 </template>

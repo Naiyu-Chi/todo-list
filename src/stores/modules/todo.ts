@@ -125,6 +125,7 @@ export const useTodoStore = defineStore("todo", () => {
      * 刪除待辦事項
      */
     const deleteTodo = async (id: string | number) => {
+        console.log(id)
         loadingState.deleting = true;
         try {
             const response = await apiDeleteTodo(id);
