@@ -1,16 +1,3 @@
-<template>
-    <div 
-        :class="['todo-item-cell', { 'completed': todo.done }]"
-        :style="{ 
-            '--event-duration': getEventDurationInHours(),
-            '--start-offset': `${getStartTimeOffset()}%` 
-        }"
-        @click.stop="handleEdit(todo)">
-        <div class="todo-time">{{ todo.startTime }} - {{ todo.endTime }}</div>
-        <div class="todo-name">{{ todo.name }}</div>
-    </div>
-</template>
-  
 <script setup>
     const props = defineProps({
         todo: {
@@ -47,6 +34,19 @@
         emit('edit', todo);
     }
 </script>
+
+<template>
+    <div 
+        :class="['todo-item-cell', { 'completed': todo.done }]"
+        :style="{ 
+            '--event-duration': getEventDurationInHours(),
+            '--start-offset': `${getStartTimeOffset()}%` 
+        }"
+        @click.stop="handleEdit(todo)">
+        <div class="todo-time">{{ todo.startTime }} - {{ todo.endTime }}</div>
+        <div class="todo-name">{{ todo.name }}</div>
+    </div>
+</template>
   
 <style lang="scss" scoped>
     .todo-item-cell {

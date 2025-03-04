@@ -24,39 +24,61 @@ export const useTodoStore = defineStore("todo", () => {
     });
     let loadingInstance: LoadingInstance | null = null;
 
+    // Add references to store the selected week range
+    const selectedWeekStart = ref<Date>(new Date());
+    const selectedWeekEnd = ref<Date>(new Date());
+
     // GETTERS
     /**
      * 取得本周待辦事項清單
      * @returns thisWeekTodos - 當前所有待辦事項
      */
     const todosByWeek = computed(() => {
-        const today = new Date();
-
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        startOfWeek.setHours(0, 0, 0, 0);
-
-        const endOfWeek = new Date(today);
-        endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
-        endOfWeek.setHours(23, 59, 59, 999);
-
+        // Use the selected week range instead of calculating from today
         return todos.value.filter(todo => {
             const todoDate = new Date(todo.date);
-            return todoDate >= startOfWeek && todoDate <= endOfWeek;
+            return todoDate >= selectedWeekStart.value && todoDate <= selectedWeekEnd.value;
         });
     });
 
     // 篩選已完成的項目
     const completedTodos = computed((): Todo[] => {
-        const totalTasks = todosByWeek;
-        return totalTasks.value.filter(todo => todo.done);
+        return todosByWeek.value.filter(todo => todo.done);
     })
 
     // 篩選未完成的項目
     const onProgressTodos = computed((): Todo[] => {
-        const totalTasks = todosByWeek;
-        return totalTasks.value.filter(todo => !todo.done);
+        return todosByWeek.value.filter(todo => !todo.done);
     })
+
+    /**
+     * 設置選定的週範圍
+     * @param start - 週的開始日期
+     * @param end - 週的結束日期
+     */
+    const setSelectedWeek = (start: Date, end: Date) => {
+        selectedWeekStart.value = start;
+        selectedWeekEnd.value = end;
+    };
+
+    /**
+     * 初始化週範圍（如果沒有設置的話）
+     */
+    const initWeekRange = () => {
+        if (!selectedWeekStart.value || !selectedWeekEnd.value) {
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+
+            const endOfWeek = new Date(today);
+            endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+            endOfWeek.setHours(23, 59, 59, 999);
+
+            selectedWeekStart.value = startOfWeek;
+            selectedWeekEnd.value = endOfWeek;
+        }
+    };
 
     // ACTIONS
     /**
@@ -70,6 +92,8 @@ export const useTodoStore = defineStore("todo", () => {
             const response = await getTodos();
             if (response.data.success) {
                 todos.value = response.data.data;
+                // Initialize week range after fetching todos
+                initWeekRange();
             }
         } catch (e: any) {
             error.value = e.message;
@@ -125,7 +149,6 @@ export const useTodoStore = defineStore("todo", () => {
      * 刪除待辦事項
      */
     const deleteTodo = async (id: string | number) => {
-        console.log(id)
         loadingState.deleting = true;
         try {
             const response = await apiDeleteTodo(id);
@@ -164,22 +187,23 @@ export const useTodoStore = defineStore("todo", () => {
         }
     };
 
-    onMounted(() => {
-        fetchTodos()
-    })
+    // Move to global api
+    // onMounted(() => {
+    //     fetchTodos()
+    // })
 
-    watch(() => loadingState.fetching, (value) => {
-        if (value) {
-            loadingInstance = ElLoading.service({
-                lock: true,
-                text: "讀取資料中..."
-            })
-        } else {
-            nextTick(() => {
-                loadingInstance?.close()
-            })
-        }
-    })
+    // watch(() => loadingState.fetching, (value) => {
+    //     if (value) {
+    //         loadingInstance = ElLoading.service({
+    //             lock: true,
+    //             text: "讀取資料中..."
+    //         })
+    //     } else {
+    //         nextTick(() => {
+    //             loadingInstance?.close()
+    //         })
+    //     }
+    // })
 
     return {
         todos,
@@ -193,5 +217,8 @@ export const useTodoStore = defineStore("todo", () => {
         updateTodo,
         deleteTodo,
         toggleDone,
+        setSelectedWeek, // Expose the new method
+        selectedWeekStart,
+        selectedWeekEnd
     };
 });

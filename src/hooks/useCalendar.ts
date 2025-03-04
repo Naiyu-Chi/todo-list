@@ -4,7 +4,6 @@ import { ref, computed } from 'vue';
 import type { CalendarDay } from '@/types'
 
 export default function useCalendar() {
-
     const currentDate = ref(new Date());
     const selectedDate = ref(new Date().toISOString().split('T')[0]); // Format: YYYY-MM-DD
 
@@ -20,12 +19,15 @@ export default function useCalendar() {
     const weekDays = computed(() => {
         const date = new Date(currentDate.value);
         const day = date.getDay();
-        date.setDate(date.getDate() - day);
+
+        const weekStartDate = new Date(date);
+        weekStartDate.setDate(date.getDate() - day);
+        // date.setDate(date.getDate() - day);
 
         const days: CalendarDay[] = [];
         for (let i = 0; i < 7; i++) {
-            const currentDay = new Date(date);
-            currentDay.setDate(date.getDate() + i);
+            const currentDay = new Date(weekStartDate);
+            currentDay.setDate(weekStartDate.getDate() + i);
 
             const formattedDate = currentDay.toISOString().split('T')[0];
 
@@ -48,6 +50,38 @@ export default function useCalendar() {
             date.getMonth() === today.getMonth() &&
             date.getFullYear() === today.getFullYear();
     }
+
+    // 週的開始日期 (00:00:00)
+    const weekStart = computed(() => {
+        const firstDay = new Date(weekDays.value[0].date);
+        firstDay.setHours(0, 0, 0, 0);
+        return firstDay;
+    });
+
+    // 週的結束日期 (23:59:59)
+    const weekEnd = computed(() => {
+        const lastDay = new Date(weekDays.value[6].date);
+        lastDay.setHours(23, 59, 59, 999);
+        return lastDay;
+    });
+
+    // 判斷是否是當前週
+    const isCurrentWeek = computed(() => {
+        const today = new Date();
+        return today >= weekStart.value && today <= weekEnd.value;
+    });
+
+    // 格式化的週日期範圍
+    const weekRangeText = computed(() => {
+        const start = weekStart.value;
+        const end = weekEnd.value;
+        const startMonth = String(start.getMonth() + 1).padStart(2, '0');
+        const startDay = String(start.getDate()).padStart(2, '0');
+        const endMonth = String(end.getMonth() + 1).padStart(2, '0');
+        const endDay = String(end.getDate()).padStart(2, '0');
+        return `${startMonth}/${startDay} - ${endMonth}/${endDay}`;
+
+    });
 
     // 返回今天
     function goToToday(): void {
@@ -76,7 +110,7 @@ export default function useCalendar() {
         selectedDate.value = formattedDate;
     }
 
-    // 取得
+    // 取得月份和年份
     const currentMonthYear = computed(() => {
         return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(currentDate.value);
     });
@@ -87,6 +121,10 @@ export default function useCalendar() {
         weekDays,
         timePeriods,
         currentMonthYear,
+        weekStart,
+        weekEnd,
+        isCurrentWeek,
+        weekRangeText,
         goToToday,
         goToPreviousWeek,
         goToNextWeek,

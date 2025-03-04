@@ -53,6 +53,13 @@
     }
   }
 
+  function handleToggleTodo(){
+    const success = todoStore.toggleDone(selectedId.value);
+    // if(success){
+    //   closeDialog()
+    // }
+  }
+
   function confirmEdit() {
     const formData = getFormData();
     if(validateForm()){
@@ -95,6 +102,7 @@
       @cancel="closeDialog"
       @confirm="confirmEdit"
       @delete="handleDeleteTodo"
+      @toggle-done="handleToggleTodo"
     />
   </div>
 </template>
