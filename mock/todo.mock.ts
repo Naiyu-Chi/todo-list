@@ -1,4 +1,5 @@
 import type { Todo } from "@/types";
+import { start } from "repl";
 const timeout = 1000;
 
 let todos: Todo[] = [
@@ -92,12 +93,15 @@ export default [
                     return {
                         ...todo,
                         name: body.name,
-                        date: body.date
+                        date: body.date,
+                        startTime: body.startTime,
+                        endTime: body.endTime
                     }
                 } else {
                     return todo
                 }
             })
+            console.log(todos)
             return {
                 success: true,
                 code: 200,

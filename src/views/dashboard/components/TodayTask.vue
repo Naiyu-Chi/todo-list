@@ -47,7 +47,8 @@
   import { useTodoStore } from '@/stores/modules/todo';
   
   const props = defineProps({
-    isCurrentWeek: Boolean
+    isCurrentWeek: Boolean,
+    calendar: Object
   });
   
   const todoStore = useTodoStore();
@@ -59,13 +60,7 @@
   });
   
   const formattedToday = computed(() => {
-    const today = new Date();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const weekdays = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
-    const weekday = weekdays[today.getDay()];
-    
-    return `${month}月${day}日 ${weekday}`;
+    return props.calendar.formatDate(todayDate.value);
   });
   
   const tasks = computed(() => {

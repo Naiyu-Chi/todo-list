@@ -2,7 +2,6 @@ import { createWebHistory, createRouter } from 'vue-router';
 
 import TodoView from '@/views/todo/index.vue';
 import DashboardView from '@/views/dashboard/index.vue'
-
 const router = createRouter({
     history: createWebHistory(),
     routes: [

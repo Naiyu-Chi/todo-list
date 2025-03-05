@@ -137,7 +137,6 @@
     .calendar-container {
         background-color: #f5f7fa;
     }
-
     .calendar-header {
         display: flex;
         justify-content: space-between;
@@ -168,7 +167,8 @@
         display: flex;
         border-bottom: 1px solid #ebeef5;
         background-color: #fff;
-        width: 100%;
+        // width: 100%;
+        min-width: 200px;
     }
 
     .time-column {
@@ -183,6 +183,7 @@
         padding: 8px;
         cursor: pointer;
         border-left: 1px solid #ebeef5;
+        min-width: 184px;
     }
 
     .day-name {
@@ -253,6 +254,7 @@
         height: 60px;
         border-bottom: 1px solid #ebeef5;
         position: relative;
+        min-width: 200px;
         cursor: pointer;
         &:hover:not(:has(*:hover)){
             background-color: #bedefd;

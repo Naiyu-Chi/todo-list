@@ -7,7 +7,8 @@
             @click="calendar.goToPreviousWeek"
         />
         <div class="week-selector">
-            <span>{{ weekRangeText }}</span>
+      
+            <span>{{ calendar.weekRangeText }}</span>
             <el-button type="primary" size="small" @click="calendar.goToToday">本週</el-button>
         </div>
         <el-button 
@@ -20,26 +21,9 @@
 </template>
   
 <script setup>
-    import { computed } from 'vue';
     import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue';
     const props = defineProps({
         calendar: Object,
-        weekStart: Date,
-        weekEnd: Date
-    });
-  
-    // 格式化的週日期範圍
-    const weekRangeText = computed(() => {
-        const start = props.weekStart;
-        const end = props.weekEnd;
-        
-        const startMonth = String(start.getMonth() + 1).padStart(2, '0');
-        const startDay = String(start.getDate()).padStart(2, '0');
-        
-        const endMonth = String(end.getMonth() + 1).padStart(2, '0');
-        const endDay = String(end.getDate()).padStart(2, '0');
-        
-        return `${startMonth}/${startDay} - ${endMonth}/${endDay}`;
     });
 </script>
   

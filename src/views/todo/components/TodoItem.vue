@@ -64,7 +64,8 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         z-index: 10;
         pointer-events: auto;
-        
+        // border:1px solid #fff;
+        // width: 90%;
         &.completed {
             background-color: #67c23a;
             text-decoration: line-through;
