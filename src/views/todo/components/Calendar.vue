@@ -1,87 +1,75 @@
 <script setup>
-  import TodoItem from '@/views/todo/components/TodoItem.vue';
-  // Props
-  const props = defineProps({
-      todos: {
-          type: Array,
-          default: () => []
-      },
-      weekDays: {
-          type: Array,
-          required: true
-      },
-      timePeriods: {
-          type: Array,
-          required: true
-      },
-      currentMonthYear: {
-          type: String,
-          required: true
-      }
-  });
+    import { ref } from 'vue';
+    import TodoItem from '@/views/todo/components/TodoItem.vue';
+    import { getTimeRangeGroupsAtTime } from '@/utils/time';
 
-  // Emits
-  const emit = defineEmits(['previous-week', 'next-week', 'go-today', 'toggle-add', 'select-date', 'toggle-edit']);
-
-  // Event handlers
-  function handleSelectDate(day) {
-      emit('select-date', day.formattedDate); 
-  }
-
-  function handleAddTask(date, time) {
-    emit('toggle-add', date, time);
-  }
-
-  function handleEdit(todo){
-    emit('toggle-edit', todo)
-  }
-
-  function goToPreviousWeek() {
-    emit('previous-week');
-  }
-
-  function goToNextWeek() {
-    emit('next-week');
-  }
-
-  function goToToday() {
-    emit('go-today');
-  }
-
-  /**
-   * 取得在該時間區段的項目
-   * @param date - 日期
-   * @param timeSlot - 時間區段起始時間
-   */
-  function getTodosAtTimeSlot(date, timeSlot) {
-    if (!props.todos || props.todos.length === 0) return [];
-    
-    const slotHour = parseInt(timeSlot.split(':')[0]);
-    
-    return props.todos.filter(todo => {
-      if (todo.date !== date) return false;
-      
-      const startHour = parseInt(todo.startTime?.split(':')[0] || '0');
-      
-      return startHour === slotHour;
+    // Props
+    const props = defineProps({
+        organizedTodos: Object,
+        weekDays: Array,
+        timePeriods: Array,
+        currentMonthYear: String,
     });
-  }
+    const isWeek = ref(true);
 
-  function handleCellClick(date, time) {
-      handleAddTask(date, time);
-  }
+    // Emits
+    const emit = defineEmits(['previous-week', 'next-week', 'go-today', 'toggle-add', 'select-date', 'toggle-edit']);
+
+    function handleSelectDate(day) {
+        emit('select-date', day.formattedDate); 
+    }
+
+    function handleAddTask(date, time) {
+        emit('toggle-add', date, time);
+    }
+
+    function handleEdit(todo){
+        emit('toggle-edit', todo);
+    }
+
+    function goToPreviousWeek() {
+        emit('previous-week');
+    }
+
+    function goToNextWeek() {
+        emit('next-week');
+    }
+
+    function goToToday() {
+        emit('go-today');
+    }
+
+    /**
+     * 獲取特定時間點的分組
+     * @param {string} date - 日期
+     * @param {string} timeSlot - 時間區段起始時間
+     * @return {Array} - 事件分組
+     */
+    function getTimeRangeGroups(date, timeSlot) {
+        return getTimeRangeGroupsAtTime(props.organizedTodos, date, timeSlot);
+    }
+
+    /**
+     * 處理單元格點擊事件，直接觸發新增任務
+     * @param {string} date - 日期
+     * @param {string} time - 時間
+     */
+    function handleCellClick(date, time) {
+        handleAddTask(date, time);
+    }
 </script>
 
 <template>
   <div class="calendar-container">
-    <!-- 表格HEADER -->
-    <div class="calendar-header">
-      <!-- 行事曆導覽Item -->
+    <!-- 日曆導航頭部 -->
+    <div class="calendar-nav-header">
+      <!-- 行事曆導覽項目 -->
       <div class="calendar-nav">
         <el-button-group>
-          <el-button @click="goToPreviousWeek">上一周</el-button>
+          <el-button @click="goToPreviousWeek">上一週</el-button>
           <el-button @click="goToToday">今天</el-button>
-          <el-button @click="goToNextWeek">下一周</el-button>
+          <el-button @click="goToNextWeek">下一週</el-button>
+          <el-button type="primary" @click="isWeek=!isWeek">切換</el-button>
         </el-button-group>
         <h2 class="month-year">{{ currentMonthYear }}</h2>
       </div>
@@ -90,12 +78,14 @@
       </div>
     </div>
 
-    <!-- 表格BODY -->
-    <div class="week-view">
-      <!--日期 -->
-      <div class="days-header">
-        <div class="time-column"></div>
-        <div v-for="day in weekDays" :key="day.formattedDate" 
+    <!-- 日曆滾動容器 -->
+    <div class="calendar-scroll-container" v-show="isWeek">
+      <div class="calendar-content">
+        <!-- 左上角的空白單元格 -->
+        <div class="corner-cell"></div>
+        
+        <!-- 日期標頭 -->
+        <div v-for="day in weekDays" :key="`header-${day.formattedDate}`" 
              class="day-column-header"
              :class="{ 'today': day.isToday, 'selected': day.isSelected }"
              @click="handleSelectDate(day)">
@@ -104,46 +94,56 @@
             {{ day.dayNumber }}
           </div>
         </div>
-      </div>
-
-      <!-- 左側時間欄位 -->
-      <div class="time-grid">
-        <div class="time-labels">
-          <div v-for="time in timePeriods" :key="time" class="time-label">
-            {{ time }}
-          </div>
-        </div>
-        <!-- 右側主要欄位 -->
-        <div class="day-columns">
-            <div v-for="day in weekDays" :key="day.formattedDate" class="day-column" :class="{ 'today': day.isToday, 'selected': day.isSelected }">
-                <div v-for="time in timePeriods" :key="`${day.formattedDate}-${time}`" 
-                     class="time-cell" 
-                     @click="handleCellClick(day.formattedDate, time)">
-                    <TodoItem 
-                        v-for="todo in getTodosAtTimeSlot(day.formattedDate, time)" 
-                        :key="todo.id" 
-                        :todo="todo"
-                        @edit="handleEdit"
-                    />
-                </div>
+        
+        <!-- 時間行及單元格 -->
+        <template v-for="time in timePeriods" :key="`row-${time}`">
+          <!-- 時間標籤 -->
+          <div class="time-label">{{ time }}</div>
+          
+          <!-- 這個時間行的所有日期單元格 -->
+          <template v-for="day in weekDays" :key="`cell-${day.formattedDate}-${time}`">
+            <div class="time-cell" 
+                 :class="{ 'today': day.isToday, 'selected': day.isSelected }"
+                 @click="handleCellClick(day.formattedDate, time)">
+              <!-- 渲染事件分組 -->
+              <template v-if="getTimeRangeGroups(day.formattedDate, time).length > 0">
+                <TodoItem
+                  v-for="group in getTimeRangeGroups(day.formattedDate, time)"
+                  :key="`group-${day.formattedDate}-${time}-${group.startTime}`"
+                  :group="group"
+                  :position="group.position"
+                  :total="group.total"
+                  @edit="handleEdit"
+                />
+              </template>
             </div>
-        </div>
+          </template>
+        </template>
       </div>
     </div>
+
+    <!-- 月曆 -->
+    <el-calendar v-show="!isWeek"/>
   </div>
 </template>
 
 <style lang="scss" scoped>
     .calendar-container {
         background-color: #f5f7fa;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
     }
-    .calendar-header {
+
+    .calendar-nav-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 16px;
         background-color: #fff;
         border-bottom: 1px solid #ebeef5;
+        flex-shrink: 0;
     }
 
     .calendar-nav {
@@ -157,33 +157,41 @@
         font-size: 18px;
     }
 
-    .week-view {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .days-header {
-        display: flex;
-        border-bottom: 1px solid #ebeef5;
-        background-color: #fff;
-        // width: 100%;
-        min-width: 200px;
-    }
-
-    .time-column {
-        width: 60px;
-        flex-shrink: 0;
-    }
-
-    .day-column-header {
+    .calendar-scroll-container {
         flex: 1;
-        min-width: 0;
+        overflow: auto;
+        position: relative;
+    }
+
+    .calendar-content {
+        display: grid;
+        grid-template-columns: 60px repeat(7, minmax(200px, 1fr)); 
+        overflow-y: hidden;
+    }
+
+    /* 左上角空白單元格 */
+    .corner-cell {
+        position: sticky;
+        top: 0;
+        left: 0;
+        z-index: 3;
+        background-color: #fff;
+        border-bottom: 1px solid #ebeef5;
+        height: 60px;
+    }
+
+    /* 日期標頭 */
+    .day-column-header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
         text-align: center;
         padding: 8px;
         cursor: pointer;
         border-left: 1px solid #ebeef5;
-        min-width: 184px;
+        border-bottom: 1px solid #ebeef5;
+        background-color: #fff;
+        height: 44px;
     }
 
     .day-name {
@@ -207,57 +215,37 @@
         color: white;
     }
 
-    .day-column-header.today, .day-column.today {
-        background-color: #f0f9ff;
-    }
-
-    .day-column-header.selected, .day-column.selected {
-        background-color: #ecf5ff;
-    }
-
-    .time-grid {
-        display: flex;
-        overflow-y: auto;
-        flex: 1;
-        background-color: #fff;
-    }
-
-    .time-labels {
-        width: 60px;
-        flex-shrink: 0;
-        background-color: #fff;
-    }
-
     .time-label {
-        height: 60px;
+        position: sticky;
+        left: 0;
+        z-index: 99;
         display: flex;
         align-items: flex-start;
         justify-content: flex-end;
         padding-right: 8px;
-        font-size: 12px;
+        font-size: 14px;
         color: #909399;
         border-bottom: 1px solid #ebeef5;
-    }
-
-    .day-columns {
-        display: flex;
-        flex: 1;
-    }
-
-    .day-column {
-        flex: 1;
-        border-left: 1px solid #ebeef5;
-        background-color: inherit;
+        background-color: #fff;
+        height: 80px;
     }
 
     .time-cell {
-        height: 60px;
+        height: 80px;
         border-bottom: 1px solid #ebeef5;
+        border-left: 1px solid #ebeef5;
         position: relative;
-        min-width: 200px;
         cursor: pointer;
         &:hover:not(:has(*:hover)){
             background-color: #bedefd;
         }
+    }
+
+    .day-column-header.today, .time-cell.today {
+        background-color: #f0f9ff;
+    }
+
+    .day-column-header.selected, .time-cell.selected {
+      background-color: #ecf5ff;
     }
 </style>

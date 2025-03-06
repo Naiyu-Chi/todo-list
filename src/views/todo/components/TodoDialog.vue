@@ -1,42 +1,68 @@
 <script setup>
-    // 使用 defineModel 來創建雙向綁定
-    const visible = defineModel('visible', {
-        type: Boolean,
-        default: false
-    });
+  import { ref, computed, onMounted, onUnmounted } from 'vue';
+  import { TIME_STEP } from '~/env.d.ts';
 
-    // 其他 props
-    const props = defineProps({
-        title: String,
-        form: Object,
-        isEditing: Boolean,
-    });
+  // 使用 defineModel 來創建雙向綁定
+  const visible = defineModel('visible', {
+      type: Boolean,
+      default: false
+  });
 
-    const emit = defineEmits(['cancel', 'confirm', 'delete', 'toggle-done']);
+  // 其他 props
+  const props = defineProps({
+      title: String,
+      form: Object,
+      isEditing: Boolean,
+  });
 
-    // Handlers
-    function handleCancel() {
-        emit('cancel');
-    }
+  const emit = defineEmits(['cancel', 'confirm', 'delete', 'toggle-done']);
 
-    function handleConfirm() {
-        emit('confirm');
-    }
+  // Handlers
+  function handleCancel() {
+      emit('cancel');
+  }
 
-    function handleDelete(){
-      emit('delete')
-    }
+  function handleConfirm() {
+      emit('confirm');
+  }
 
-    function handleToggleDone(){
-      emit('toggle-done')
-    }
+  function handleDelete(){
+    emit('delete')
+  }
+
+  function handleToggleDone(){
+    emit('toggle-done')
+  }
+
+  const windowWidth = ref(window.innerWidth);
+
+  function updateWidth() {
+    windowWidth.value = window.innerWidth;
+  }
+
+  onMounted(() => {
+    window.addEventListener('resize', updateWidth);
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('resize', updateWidth);
+  });
+
+  // 取得對話框寬度
+  const dialogWidth = computed(() => {
+    if (windowWidth.value < 576) return '300px';         // xs
+    if (windowWidth.value < 768) return '350px';         // sm
+    if (windowWidth.value < 992) return '450px';         // md
+    if (windowWidth.value < 1200) return '550px';        // lg
+    return '600px';                                      // xl
+  });
 </script>
   
 <template>
   <el-dialog 
     v-model="visible" 
     :title="title" 
-    width="450" 
+    :width="dialogWidth"
   >
     <el-form :model="form" label-position="top">
       <el-form-item label="待辦事項名稱" required>
@@ -64,7 +90,7 @@
               <el-time-select
                 v-model="form.startTime"
                 start="00:00"
-                step="00:30"
+                :step="`00:${TIME_STEP}`" 
                 end="24:00"
                 placeholder="選擇開始時間"
               />

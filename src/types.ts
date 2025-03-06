@@ -12,11 +12,11 @@ export interface Form {
     date: string | null,
     startTime: string,
     endTime: string
+    done: boolean
 }
 
 export interface Todo extends Form {
     id: string;
-    done: boolean;
 }
 
 

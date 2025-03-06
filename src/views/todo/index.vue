@@ -1,10 +1,10 @@
 <script setup>
+  import { onMounted } from "vue";
   // Components
   import Calendar from "./components/Calendar.vue";
   import TodoDialog from "@/views/todo/components/TodoDialog.vue";
 
   // Custom Hooks
-  import { onMounted } from "vue";
   import useCalendar from "@/hooks/useCalendar";
   import useDialog from "@/hooks/useDialog";
 
@@ -65,7 +65,6 @@
   function confirmEdit() {
     const formData = getFormData();
     if (validateForm()) {
-      console.log(formData);
       const success = isEditing.value
         ? updateTodo(selectedId.value, formData)
         : addTodo(formData);
@@ -84,10 +83,11 @@
     <div class="todo-app">
       <!-- 週行事曆組件 -->
       <Calendar
-        :todos="todoStore.todos"
+        :organized-todos="todoStore.organizedTodos"
         :weekDays="weekDays"
         :timePeriods="timePeriods"
         :currentMonthYear="currentMonthYear"
+        :max-display-todos="3"
         @previous-week="goToPreviousWeek"
         @next-week="goToNextWeek"
         @go-today="goToToday"

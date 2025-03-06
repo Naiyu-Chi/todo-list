@@ -1,17 +1,35 @@
+
+<script setup>
+  import { computed } from 'vue';
+  import { useRoute } from 'vue-router';
+  import { House, DataBoard } from '@element-plus/icons-vue';
+
+  const route = useRoute();
+
+  const props = defineProps({
+    isCollapsed: Boolean
+  });
+
+  const emit = defineEmits(['toggle-sidebar']);
+
+  const activeIndex = computed(() => {
+    return route.path;
+  });
+</script>
+
 <template>
   <!-- 大螢幕選單 -->
   <div 
     class="sidebar-container" 
     :class="{ 
-      'hidden-xs-only': true, 
-      'is-collapsed': isCollapsed 
+      'is-collapsed': props.isCollapsed 
     }"
   >
     <el-scrollbar height="100%">
       <el-menu
         :default-active="activeIndex"
         class="el-menu-vertical"
-        :collapse="isCollapsed"
+        :collapse="props.isCollapsed"
         :router="true"
         :collapse-transition="false"
       >
@@ -28,66 +46,7 @@
       </el-menu>
     </el-scrollbar>
   </div>
-  
-  <!-- 小螢幕選單 -->
-  <el-drawer
-    v-model="drawerVisible"
-    title="導覽選單"
-    direction="ltr"
-    :with-header="true"
-    size="240px"
-    :before-close="closeDrawer"
-    class="mobile-drawer"
-  >
-    <template #header>
-      <div class="drawer-header">導覽選單</div>
-    </template>
-    <el-scrollbar height="calc(100% - 60px)">
-      <el-menu
-        :default-active="activeIndex"
-        class="drawer-menu"
-        :router="true"
-      >
-        <el-menu-item index="/">
-          <el-icon><House /></el-icon>
-          <span>首頁</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard">
-          <el-icon><DataBoard /></el-icon>
-          <span>儀表板</span>
-        </el-menu-item>
-      </el-menu>
-    </el-scrollbar>
-  </el-drawer>
 </template>
-
-<script setup>
-  import { ref, computed, inject } from 'vue';
-  import { useRoute } from 'vue-router';
-  import { House, DataBoard } from '@element-plus/icons-vue';
-
-  const route = useRoute();
-
-  const isCollapsed = inject('sidebarCollapsed', ref(false));
-  const drawerVisible = ref(false);
-
-  const toggleDrawer = () => {
-    drawerVisible.value = !drawerVisible.value;
-  };
-
-  const existingToggleDrawer = inject('toggleDrawer', null);
-  if (existingToggleDrawer === null) {
-    window.toggleDrawer = toggleDrawer;
-  } 
-
-  const activeIndex = computed(() => {
-    return route.path;
-  });
-
-  function closeDrawer(){
-    drawerVisible.value = false;
-  }
-</script>
 
 <style lang="scss" scoped>
   .sidebar-container {
@@ -95,7 +54,7 @@
     top: 60px; 
     left: 0;
     bottom: 0;
-    width: 260px;
+    width: 240px;
     border-right: 1px solid #e6e6e6;
     background-color: #fff;
     overflow-y: auto;
@@ -135,9 +94,6 @@
     }
     
     .el-menu-item {
-      height: 40px;
-      line-height: 40px;
-      
       &.is-active {
         background-color: #ecf5ff;
         color: #409EFF;
