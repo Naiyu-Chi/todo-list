@@ -1,5 +1,11 @@
 <script setup>
     import { ref, computed } from 'vue';
+    import { useTodoStore } from '@/stores/modules/todo';
+    import useTimeCalculations from '@/hooks/useTimeCalculation';
+    const { getStartTimeOffset, getEventDurationInHours } = useTimeCalculations();
+    import useDialog from '@/hooks/useDialog';
+    const todoStore = useTodoStore();
+    const { openDialogForEdit } = useDialog()
 
     const props = defineProps({
         todo: Object,
@@ -30,9 +36,10 @@
     const groupEvents = computed(() => isGroup.value ? props.group.events : []);
 
     /**
-     * 獲取第一個待辦事項（用於顯示）
+     * 獲取第一個待辦事項
      */
     const firstTodo = computed(() => isGroup.value ? props.group.events[0] : props.todo);
+    const duration = computed(() => getEventDurationInHours(firstTodo.value.startTime, firstTodo.value.endTime));
 
     /**
      * 檢查群組內所有事項是否都已完成
@@ -42,36 +49,6 @@
         if (groupEvents.value.length === 0) return false;
         return groupEvents.value.every(item => item.done);
     });
-
-    /**
-     * 計算事件持續時間（小時）
-     * @returns {number} 持續時間
-     */
-    function getEventDurationInHours() {
-        const todo = firstTodo.value;
-        if (!todo || !todo.startTime || !todo.endTime) return 1;
-        
-        const [startHour, startMinute] = todo.startTime.split(':').map(Number);
-        const [endHour, endMinute] = todo.endTime.split(':').map(Number);
-        
-        const startTotalMinutes = startHour * 60 + startMinute;
-        const endTotalMinutes = endHour * 60 + endMinute;
-        
-        return (endTotalMinutes - startTotalMinutes) / 60;
-    }
-
-    /**
-     * 計算開始時間相對於小時起始的偏移量
-     * @returns {number} 偏移百分比
-     */
-    function getStartTimeOffset() {
-        const todo = firstTodo.value;
-        if (!todo || !todo.startTime) return 0;
-        
-        const [_, startMinute] = todo.startTime.split(':').map(Number);
-        
-        return (startMinute / 60) * 100;
-    }
 
     /**
      * 根據總分組數計算項目寬度
@@ -99,6 +76,7 @@
      * @param {Object} todo - 待辦事項
      */
     function handleEdit(todo) {
+        console.log("todo..........")
         emit('edit', todo);
         closeGroupDialog();
     }
@@ -111,7 +89,9 @@
             groupDialogVisible.value = true;
         } else {
             // 如果只有一個項目，直接編輯
-            emit('edit', firstTodo.value);
+            console.log(firstTodo.value)
+            // emit('edit', firstTodo.value);
+            openDialogForEdit(firstTodo.value);
         }
     }
 
@@ -134,10 +114,10 @@
             }
         ]"
         :style="{ 
-            '--event-duration': getEventDurationInHours(),
+            '--event-duration': duration,
             '--start-offset': `${getStartTimeOffset()}%`,
             'width': getItemWidth(),
-            'left': getHorizontalOffset()
+            'left': getHorizontalOffset(),
         }"
         @click.stop="handleGroupClick">
         <!-- 單個待辦事項或分組中的第一個待辦事項 -->
@@ -160,18 +140,24 @@
             width="300px"
             append-to-body
         >
-            <div class="group-items-list">
-                <div 
-                    v-for="(item, index) in groupEvents" 
-                    :key="item.id"
-                    class="group-item"
-                    :class="{ 'completed': item.done }"
-                    @click="handleEdit(item)"
-                >
-                    <div class="item-name">{{ item.name }}</div>
-                    <div class="item-status" v-if="item.done">✓</div>
+        <div class="group-items-list">
+            <div 
+                v-for="(item) in groupEvents" 
+                :key="item.id"
+                class="group-item"
+                :class="{ 'completed': item.done }"
+                @click="handleEdit(item)"
+            >
+                <div class="item-checkbox" @click.stop>
+                    <el-checkbox 
+                        v-model="item.done" 
+                        @change="todoStore.toggleDone(item.id)"
+                    ></el-checkbox>
                 </div>
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-status" v-if="item.done">✓</div>
             </div>
+        </div>
         </el-dialog>
     </div>
 </template>
@@ -276,4 +262,10 @@
             }
         }
     }
+
+    .item-checkbox {
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+        }
 </style>

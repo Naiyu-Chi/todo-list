@@ -4,14 +4,14 @@
   import Cards from "./components/Cards.vue";
   import TodayTasks from "./components/TodayTask.vue";
   import Chart from "@/views/dashboard/components/Chart.vue";
-  import WeeklyDistribution from "@/views/dashboard/components/Distribution.vue";
+  import WeeklyDistribution from "@/views/dashboard/components/WeeklyDistribution.vue";
 
   // Hooks
   import { computed, onMounted } from "vue";
   import useCalendar from "@/hooks/useCalendar";
 
   const calendar = useCalendar();
-  const { weekStart, weekEnd, isCurrentWeek, formatDate } = calendar;
+  const { weekStart, weekEnd, isCurrentWeek } = calendar;
 
   // Stores
   import { useTodoStore } from "@/stores/modules/todo";

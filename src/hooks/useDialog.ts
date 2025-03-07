@@ -2,7 +2,6 @@ import { ref, reactive } from "vue";
 import type { Todo, Form } from "@/types";
 import useTimeCalculation from "@/hooks/useTimeCalculation";
 import useFormValidate from "@/hooks/useFormValidate";
-
 export default function useDialog() {
   const { getCurrentRoundedTime, getDefaultEndTime } = useTimeCalculation();
 
@@ -13,7 +12,7 @@ export default function useDialog() {
   const selectedId = ref<string>("");
 
   // 表單資料
-  const form = reactive<Form>({
+  const form = reactive<Partial<Form>>({
     name: "",
     date: null,
     startTime: "00:00",

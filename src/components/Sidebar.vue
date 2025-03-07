@@ -10,15 +10,12 @@
     isCollapsed: Boolean
   });
 
-  const emit = defineEmits(['toggle-sidebar']);
-
   const activeIndex = computed(() => {
     return route.path;
   });
 </script>
 
 <template>
-  <!-- 大螢幕選單 -->
   <div 
     class="sidebar-container" 
     :class="{ 

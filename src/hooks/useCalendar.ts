@@ -18,9 +18,10 @@ export default function useCalendar() {
   const weekDays = computed(() => {
     const date = new Date(currentDate.value);
     const day = date.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
 
     const weekStartDate = new Date(date);
-    weekStartDate.setDate(date.getDate() - day);
+    weekStartDate.setDate(date.getDate() + diffToMonday);
 
     const days: CalendarDay[] = [];
     for (let i = 0; i < 7; i++) {
@@ -32,7 +33,7 @@ export default function useCalendar() {
       days.push({
         date: currentDay,
         formattedDate,
-        dayName: new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(
+        dayName: new Intl.DateTimeFormat("zh-TW", { weekday: "short" }).format(
           currentDay
         ),
         dayNumber: currentDay.getDate(),
@@ -126,7 +127,7 @@ export default function useCalendar() {
 
   // 取得月份和年份
   const currentMonthYear = computed(() => {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("zh-TW", {
       month: "long",
       year: "numeric",
     }).format(currentDate.value);

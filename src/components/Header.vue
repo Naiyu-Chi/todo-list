@@ -22,7 +22,7 @@
       isCollapsed: Boolean,
     });
 
-    const emit = defineEmits(['toggle-sidebar', 'update-drawer-state']);
+    const emit = defineEmits(['toggle-sidebar']);
 </script>
   
 <style lang="scss" scoped>
@@ -34,7 +34,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 60px;
+      height: 70px;
       padding: 0 16px;
       background-color: #fff;
       border-bottom: 1px solid #ebeef5;

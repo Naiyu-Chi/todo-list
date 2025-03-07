@@ -1,7 +1,8 @@
 <script setup>
     import { ref } from 'vue';
     import TodoItem from '@/views/todo/components/TodoItem.vue';
-    import { getTimeRangeGroupsAtTime } from '@/utils/time';
+    import { useTodoStore } from '@/stores/modules/todo';
+    const todoStore = useTodoStore();
 
     // Props
     const props = defineProps({
@@ -9,6 +10,7 @@
         weekDays: Array,
         timePeriods: Array,
         currentMonthYear: String,
+        selectedDate: String,
     });
     const isWeek = ref(true);
 
@@ -27,18 +29,6 @@
         emit('toggle-edit', todo);
     }
 
-    function goToPreviousWeek() {
-        emit('previous-week');
-    }
-
-    function goToNextWeek() {
-        emit('next-week');
-    }
-
-    function goToToday() {
-        emit('go-today');
-    }
-
     /**
      * 獲取特定時間點的分組
      * @param {string} date - 日期
@@ -46,7 +36,7 @@
      * @return {Array} - 事件分組
      */
     function getTimeRangeGroups(date, timeSlot) {
-        return getTimeRangeGroupsAtTime(props.organizedTodos, date, timeSlot);
+      return todoStore.getGroupsAtTime(date, timeSlot);
     }
 
     /**
@@ -55,7 +45,7 @@
      * @param {string} time - 時間
      */
     function handleCellClick(date, time) {
-        handleAddTask(date, time);
+      handleAddTask(date, time);
     }
 </script>
 
@@ -64,15 +54,7 @@
     <!-- 日曆導航頭部 -->
     <div class="calendar-nav-header">
       <!-- 行事曆導覽項目 -->
-      <div class="calendar-nav">
-        <el-button-group>
-          <el-button @click="goToPreviousWeek">上一週</el-button>
-          <el-button @click="goToToday">今天</el-button>
-          <el-button @click="goToNextWeek">下一週</el-button>
-          <el-button type="primary" @click="isWeek=!isWeek">切換</el-button>
-        </el-button-group>
-        <h2 class="month-year">{{ currentMonthYear }}</h2>
-      </div>
+        <p class="month-year el-calendar__title">{{ currentMonthYear }}</p>
       <div class="view-actions">
         <slot name="header-actions"></slot>
       </div>
@@ -83,11 +65,10 @@
       <div class="calendar-content">
         <!-- 左上角的空白單元格 -->
         <div class="corner-cell"></div>
-        
         <!-- 日期標頭 -->
         <div v-for="day in weekDays" :key="`header-${day.formattedDate}`" 
              class="day-column-header"
-             :class="{ 'today': day.isToday, 'selected': day.isSelected }"
+             :class="{ 'today': day.isToday, 'selected': day.isSelected || day.formattedDate === selectedDate }"
              @click="handleSelectDate(day)">
           <div class="day-name">{{ day.dayName }}</div>
           <div class="day-number" :class="{ 'current-day': day.isToday }">
@@ -99,11 +80,10 @@
         <template v-for="time in timePeriods" :key="`row-${time}`">
           <!-- 時間標籤 -->
           <div class="time-label">{{ time }}</div>
-          
           <!-- 這個時間行的所有日期單元格 -->
           <template v-for="day in weekDays" :key="`cell-${day.formattedDate}-${time}`">
             <div class="time-cell" 
-                 :class="{ 'today': day.isToday, 'selected': day.isSelected }"
+                 :class="{ 'today': day.isToday, 'selected': day.isSelected || day.formattedDate === selectedDate  }"
                  @click="handleCellClick(day.formattedDate, time)">
               <!-- 渲染事件分組 -->
               <template v-if="getTimeRangeGroups(day.formattedDate, time).length > 0">
@@ -121,9 +101,6 @@
         </template>
       </div>
     </div>
-
-    <!-- 月曆 -->
-    <el-calendar v-show="!isWeek"/>
   </div>
 </template>
 
@@ -152,11 +129,6 @@
         gap: 16px;
     }
 
-    .month-year {
-        margin: 0;
-        font-size: 18px;
-    }
-
     .calendar-scroll-container {
         flex: 1;
         overflow: auto;
@@ -177,7 +149,7 @@
         z-index: 3;
         background-color: #fff;
         border-bottom: 1px solid #ebeef5;
-        height: 60px;
+        height: 64px;
     }
 
     /* 日期標頭 */
@@ -191,7 +163,7 @@
         border-left: 1px solid #ebeef5;
         border-bottom: 1px solid #ebeef5;
         background-color: #fff;
-        height: 44px;
+        height: 48px;
     }
 
     .day-name {

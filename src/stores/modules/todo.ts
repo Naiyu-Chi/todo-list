@@ -8,7 +8,11 @@ import {
   deleteTodo as apiDeleteTodo,
   toggleTodo as apiToggleTodo,
 } from "@/api/todo";
-import { organizeTodos } from "@/utils/time";
+import {
+  organizeTodos,
+  getGroupsInHour,
+  getTimeRangeGroupsAtTime
+} from "@/utils/time";
 import type { Form, Todo } from "@/types";
 
 export const useTodoStore = defineStore("todo", () => {
@@ -26,7 +30,7 @@ export const useTodoStore = defineStore("todo", () => {
   /**
    * 包裝 API 呼叫
    * @param apiCall - API 調用函數
-   * @param loadingKey - 載入狀態的鍵值
+   * @param loadingKey 
    * @param successMessage - 成功訊息
    */
   const apiCall = async (
@@ -53,10 +57,25 @@ export const useTodoStore = defineStore("todo", () => {
 
   // GETTERS
   /**
-   * 獲取組織後的待辦事項（按日期和時間結構化）
+   * 獲取組織後的待辦事項
    */
   const organizedTodos = computed(() => {
     return organizeTodos(todos.value);
+  });
+
+  const getGroupsByHour = computed(() => {
+    return (date: string, hour: string) => {
+      return getGroupsInHour(organizedTodos.value, date, hour);
+    };
+  });
+
+  /**
+   * 獲取特定時間點的分組
+   */
+  const getGroupsAtTime = computed(() => {
+    return (date: string, timeSlot: string) => {
+      return getTimeRangeGroupsAtTime(organizedTodos.value, date, timeSlot);
+    };
   });
 
   /**
@@ -147,6 +166,8 @@ export const useTodoStore = defineStore("todo", () => {
     organizedTodos,
     error,
     loadingState,
+    getGroupsByHour,
+    getGroupsAtTime,
     getTodosByDateRange,
     getTodosByDate,
     getCompletedTodos,

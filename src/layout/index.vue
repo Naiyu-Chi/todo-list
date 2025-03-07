@@ -1,24 +1,22 @@
 <template>
     <el-scrollbar>
-      <div class="app-container" :class="{ 'sidebar-collapsed': layoutState.sidebarCollapsed }">
+      <div class="app-container" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
         <el-container>
           <el-header height="60px" class="header-container">
             <TodoHeader 
-              :is-collapsed="layoutState.sidebarCollapsed"
-              @toggle-sidebar="toggleSidebar" 
-              @update-drawer-state="updateDrawerState"/>
+              :is-collapsed="sidebarCollapsed"
+              @toggle-sidebar="toggleSidebar"/>
           </el-header>
           <el-container>
             <el-aside width="auto" class="aside-container">
               <Sidebar 
-                :is-collapsed="layoutState.sidebarCollapsed"
-                v-model:visible="layoutState.drawerVisible"
+                :is-collapsed="sidebarCollapsed"
                 @toggle-sidebar="toggleSidebar" 
               />
             </el-aside>
             <el-main class="main-container">
               <router-view />
-              <el-backtop target=".main-container" :right="100" :bottom="80" />
+              <el-backtop target=".main-container"/>
             </el-main>
           </el-container>
         </el-container>
@@ -27,23 +25,15 @@
 </template>
   
 <script setup>
-  import { reactive } from 'vue';
+  import { ref } from 'vue';
   import TodoHeader from '@/components/Header.vue';
   import Sidebar from '@/components/Sidebar.vue';
 
-  const layoutState = reactive({
-    sidebarCollapsed: true,
-    drawerVisible: false
-  });
-  
-  // 切換sidebar收合狀態
+  const sidebarCollapsed = ref(true);
   const toggleSidebar = () => {
-    layoutState.sidebarCollapsed = !layoutState.sidebarCollapsed;
+    sidebarCollapsed.value =! sidebarCollapsed.value;
   };
-  
-  const updateDrawerState = (isVisible) => {
-    layoutState.drawerVisible = isVisible;
-  };
+
 </script>
   
 <style lang="scss" scoped>

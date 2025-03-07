@@ -88,7 +88,7 @@ function calculateGlobalOverlap(groups, date) {
 
     // 建立重疊圖 - 追蹤哪些組重疊
     const overlapGraph = {};
-    groups.forEach((group, index) => {
+    groups.forEach((_, index) => {
         overlapGraph[index] = [];
     });
 
@@ -103,8 +103,6 @@ function calculateGlobalOverlap(groups, date) {
             const startB = moment(`${date} ${groupB.startTime}`, 'YYYY-MM-DD HH:mm');
             const endB = moment(`${date} ${groupB.endTime}`, 'YYYY-MM-DD HH:mm');
 
-            // 更精確地檢查時間重疊
-            // 只有當一個事件在另一個事件結束前開始，並且在另一個事件開始後結束，才算重疊
             if (startA.isBefore(endB) && endA.isAfter(startB)) {
                 overlapGraph[i].push(j);
                 overlapGraph[j].push(i);
@@ -177,7 +175,7 @@ function calculateGlobalOverlap(groups, date) {
         // 計算最大所需的位置數
         const totalPositions = Object.keys(usedPositions).length;
 
-        // 更新每個分組的位置信息
+        // 更新每個分組的位置訊息
         sortedIndices.forEach(index => {
             groups[index].position = positions[index];
             groups[index].total = totalPositions;
@@ -187,7 +185,7 @@ function calculateGlobalOverlap(groups, date) {
 
 /**
  * 找出圖中的所有連接組件
- * @param {Object} graph - 圖的鄰接表
+ * @param {Object} graph
  * @return {Array} - 連接組件的陣列
  */
 function findConnectedComponents(graph) {

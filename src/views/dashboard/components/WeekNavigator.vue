@@ -7,7 +7,6 @@
             @click="calendar.goToPreviousWeek"
         />
         <div class="week-selector">
-      
             <span>{{ calendar.weekRangeText }}</span>
             <el-button type="primary" size="small" @click="calendar.goToToday">本週</el-button>
         </div>

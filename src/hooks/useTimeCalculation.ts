@@ -1,3 +1,4 @@
+import { TIME_STEP } from '~/env.d.ts';
 export default function useTimeCalculations() {
   /**
    * 將時間字串轉換為分鐘數
@@ -76,7 +77,7 @@ export default function useTimeCalculations() {
   const getCurrentRoundedTime = (): string => {
     const now = new Date();
     const minutes = now.getMinutes();
-    const roundedMinutes = Math.ceil(minutes / 30) * 30;
+    const roundedMinutes = Math.ceil(minutes / TIME_STEP) * TIME_STEP;
 
     now.setMinutes(roundedMinutes);
 
@@ -86,23 +87,6 @@ export default function useTimeCalculations() {
     return `${String(hours).padStart(2, "0")}:${minutesStr}`;
   };
 
-  /**
-   * 檢查兩個時間範圍是否重疊
-   */
-  const timeRangesOverlap = (
-    startA: string,
-    endA: string,
-    startB: string,
-    endB: string
-  ): boolean => {
-    const startAMinutes = parseTimeToMinutes(startA);
-    const endAMinutes = parseTimeToMinutes(endA);
-    const startBMinutes = parseTimeToMinutes(startB);
-    const endBMinutes = parseTimeToMinutes(endB);
-
-    return startAMinutes < endBMinutes && endAMinutes > startBMinutes;
-  };
-
   return {
     parseTimeToMinutes,
     formatMinutesToTime,
@@ -110,6 +94,5 @@ export default function useTimeCalculations() {
     getStartTimeOffset,
     getDefaultEndTime,
     getCurrentRoundedTime,
-    timeRangesOverlap,
   };
 }

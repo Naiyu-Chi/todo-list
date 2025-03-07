@@ -52,9 +52,9 @@
   const dialogWidth = computed(() => {
     if (windowWidth.value < 576) return '300px';         // xs
     if (windowWidth.value < 768) return '350px';         // sm
-    if (windowWidth.value < 992) return '450px';         // md
-    if (windowWidth.value < 1200) return '550px';        // lg
-    return '600px';                                      // xl
+    if (windowWidth.value < 992) return '400px';         // md
+    if (windowWidth.value < 1200) return '450px';        // lg
+    return '500px';                                      // xl
   });
 </script>
   
