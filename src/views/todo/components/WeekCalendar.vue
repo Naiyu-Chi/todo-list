@@ -1,18 +1,27 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, computed } from 'vue';
     import TodoItem from '@/views/todo/components/TodoItem.vue';
     import { useTodoStore } from '@/stores/modules/todo';
+    
     const todoStore = useTodoStore();
 
     // Props
     const props = defineProps({
-        organizedTodos: Object,
+        // organizedTodos: Object,
         weekDays: Array,
         timePeriods: Array,
         currentMonthYear: String,
         selectedDate: String,
     });
     const isWeek = ref(true);
+
+    // 對話框相關
+    const moreDialogVisible = ref(false);
+    const moreDialogEvents = ref([]);
+    const moreDialogTitle = ref('');
+
+    // 設置最大顯示事項數量
+    const MAX_VISIBLE_POSITIONS = 10;
 
     // Emits
     const emit = defineEmits(['previous-week', 'next-week', 'go-today', 'toggle-add', 'select-date', 'toggle-edit']);
@@ -30,13 +39,67 @@
     }
 
     /**
-     * 獲取特定時間點的分組
+     * 獲取特定時間點的事件組
      * @param {string} date - 日期
      * @param {string} timeSlot - 時間區段起始時間
-     * @return {Array} - 事件分組
+     * @return {Array} - 事件組列表
      */
     function getTimeRangeGroups(date, timeSlot) {
       return todoStore.getGroupsAtTime(date, timeSlot);
+    }
+
+    /**
+     * 獲取可見的事件組（前10個位置）
+     * @param {string} date - 日期
+     * @param {string} timeSlot - 時間槽
+     * @returns {Array} - 可見的事件組
+     */
+    function getVisibleGroups(date, timeSlot) {
+        const groups = getTimeRangeGroups(date, timeSlot);
+        
+        // 篩選出位置索引小於10的事件組
+        return groups.filter(group => group.position < MAX_VISIBLE_POSITIONS);
+    }
+
+    /**
+     * 獲取隱藏的事件組（位置索引>=10的事件組）
+     * @param {string} date - 日期
+     * @param {string} timeSlot - 時間槽
+     * @returns {Array} - 隱藏的事件組
+     */
+    function getHiddenGroups(date, timeSlot) {
+        const groups = getTimeRangeGroups(date, timeSlot);
+        
+        // 篩選出位置索引>=10的事件組
+        return groups.filter(group => group.position >= MAX_VISIBLE_POSITIONS);
+    }
+
+    /**
+     * 獲取所有隱藏事件的數量
+     * @param {string} date - 日期
+     * @param {string} timeSlot - 時間槽
+     * @returns {number} - 隱藏事件數量
+     */
+    function getHiddenEventCount(date, timeSlot) {
+        const hiddenGroups = getHiddenGroups(date, timeSlot);
+        
+        // 計算所有隱藏組中的事件總數
+        return hiddenGroups.reduce((count, group) => {
+            return count + (group.events?.length || 0);
+        }, 0);
+    }
+
+    /**
+     * 判斷是否需要顯示更多按鈕
+     * @param {string} date - 日期
+     * @param {string} timeSlot - 時間槽
+     * @returns {boolean} - 是否需要顯示更多按鈕
+     */
+    function shouldShowMoreButton(date, timeSlot) {
+        const groups = getTimeRangeGroups(date, timeSlot);
+        
+        // 檢查是否有位置索引>=10的事件組
+        return groups.some(group => group.position >= MAX_VISIBLE_POSITIONS);
     }
 
     /**
@@ -46,6 +109,34 @@
      */
     function handleCellClick(date, time) {
       handleAddTask(date, time);
+    }
+
+    /**
+     * 顯示更多事件的對話框
+     * @param {string} date - 日期
+     * @param {string} time - 時間
+     */
+    function showMoreEventsDialog(date, time) {
+        const formattedDate = new Date(date).toLocaleDateString('zh-TW', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric', 
+            weekday: 'long' 
+        });
+        moreDialogTitle.value = `${formattedDate} ${time} - 隱藏事項`;
+        
+        // 獲取所有隱藏的事件
+        const hiddenEvents = getHiddenGroups(date, time).flatMap(group => group.events || []);
+        moreDialogEvents.value = hiddenEvents;
+        moreDialogVisible.value = true;
+    }
+
+    /**
+     * 關閉更多事件的對話框
+     */
+    function closeMoreDialog() {
+        moreDialogVisible.value = false;
+        moreDialogEvents.value = [];
     }
 </script>
 
@@ -85,22 +176,65 @@
             <div class="time-cell" 
                  :class="{ 'today': day.isToday, 'selected': day.isSelected || day.formattedDate === selectedDate  }"
                  @click="handleCellClick(day.formattedDate, time)">
-              <!-- 渲染事件分組 -->
-              <template v-if="getTimeRangeGroups(day.formattedDate, time).length > 0">
+              <div class="cell-content">
+                <!-- 顯示位置索引小於10的事項 -->
                 <TodoItem
-                  v-for="group in getTimeRangeGroups(day.formattedDate, time)"
-                  :key="`group-${day.formattedDate}-${time}-${group.startTime}`"
+                  v-for="group in getVisibleGroups(day.formattedDate, time)"
+                  :key="`event-${day.formattedDate}-${time}-${group.events[0].id}`"
                   :group="group"
                   :position="group.position"
                   :total="group.total"
                   @edit="handleEdit"
                 />
-              </template>
+                
+                <!-- 如果有位置索引>=10的事項，顯示 +x 按鈕 -->
+                <button
+                  v-if="shouldShowMoreButton(day.formattedDate, time)"
+                  class="more-events-button"
+                  @click.stop="showMoreEventsDialog(day.formattedDate, time)"
+                >
+                  +{{ getHiddenEventCount(day.formattedDate, time) }}
+                </button>
+              </div>
             </div>
           </template>
         </template>
       </div>
     </div>
+
+    <!-- 更多事項對話框 -->
+    <el-dialog
+      v-model="moreDialogVisible"
+      :title="moreDialogTitle"
+      width="350px"
+      append-to-body
+    >
+      <div class="more-events-list">
+        <div
+          v-for="event in moreDialogEvents"
+          :key="event.id"
+          class="more-event-item"
+          :class="{ 'event-completed': event.done }"
+          @click="handleEdit(event); closeMoreDialog();"
+        >
+          <div class="event-checkbox" @click.stop>
+            <el-checkbox
+              v-model="event.done"
+              @change="todoStore.toggleDone(event.id)"
+            ></el-checkbox>
+          </div>
+          <div class="event-details">
+            <div class="event-time">{{ event.startTime }} - {{ event.endTime }}</div>
+            <div class="event-name">{{ event.name }}</div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="closeMoreDialog">關閉</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -211,6 +345,12 @@
         &:hover:not(:has(*:hover)){
             background-color: #bedefd;
         }
+        
+        .cell-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
     }
 
     .day-column-header.today, .time-cell.today {
@@ -219,5 +359,66 @@
 
     .day-column-header.selected, .time-cell.selected {
       background-color: #ecf5ff;
+    }
+
+    /* 顯示更多按鈕樣式 */
+    .more-events-button {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+        background-color: #409eff;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        z-index: 100;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        
+        &:hover {
+            background-color: #66b1ff;
+        }
+    }
+
+    /* 更多事項對話框中的列表樣式 */
+    .more-events-list {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .more-event-item {
+        display: flex;
+        padding: 10px;
+        border-bottom: 1px solid #ebeef5;
+        cursor: pointer;
+        
+        &:hover {
+            background-color: #f5f7fa;
+        }
+        
+        &.event-completed {
+            text-decoration: line-through;
+            color: #67c23a;
+        }
+        
+        .event-checkbox {
+            margin-right: 10px;
+        }
+        
+        .event-details {
+            flex: 1;
+            
+            .event-time {
+                font-size: 12px;
+                color: #909399;
+            }
+            
+            .event-name {
+                font-size: 14px;
+                font-weight: 500;
+                margin-top: 2px;
+            }
+        }
     }
 </style>

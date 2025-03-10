@@ -12,7 +12,7 @@
   // Pinia store
   import { useTodoStore } from "@/stores/modules/todo";
   const todoStore = useTodoStore();
-  const { addTodo, updateTodo, deleteTodo, fetchTodos } = todoStore;
+  const { fetchTodos } = todoStore;
 
   const calendar = useCalendar();
   const {
@@ -28,16 +28,8 @@
   } = calendar;
 
   const {
-    dialogFormVisible,
-    isEditing,
-    dialogTitle,
-    selectedId,
-    form,
     openDialogForAdd,
     openDialogForEdit,
-    closeDialog,
-    getFormData,
-    validateForm
   } = useDialog();
 
   const displayWeek = ref(true); // 預設顯示週行事曆
@@ -52,36 +44,12 @@
     selectDate(date);
   }
 
-  // 處理刪除待辦事項
-  function handleDeleteTodo() {
-    const success = deleteTodo(selectedId.value);
-    if (success) {
-      closeDialog();
-    }
-  }
-
-  // 處理切換待辦事項完成狀態
-  function handleToggleTodo() {
-    todoStore.toggleDone(selectedId.value);
-  }
-
-  // 確認編輯或新增表單
-  function confirmEdit() {
-    const formData = getFormData();
-    if (validateForm()) {
-      const success = isEditing.value
-        ? updateTodo(selectedId.value, formData)
-        : addTodo(formData);
-      if (success) {
-        closeDialog();
-      }
-    }
-  }
-
+  // 切換週視圖 & 月視圖
   function handleToggleCalendar(date){
     displayWeek.value = !displayWeek.value;
     nextTick(()=>{
-      currentDate.value = date;
+      currentDate.value = new Date(date);
+      selectedDate.value = date;
     })
   }
 
@@ -96,10 +64,10 @@
       <el-button @click="displayWeek=!displayWeek" :type="displayWeek ? 'primary' : 'default'" >週視圖</el-button>
       <el-button @click="displayWeek=!displayWeek" :type="!displayWeek ? 'primary' : 'default'" >月視圖</el-button>
     </el-button-group>
+    
     <!-- 週行事曆組件 -->
     <WeekCalendar
       v-if="displayWeek"
-      :organized-todos="todoStore.organizedTodos"
       :weekDays="weekDays"
       :timePeriods="timePeriods"
       :currentMonthYear="currentMonthYear"
@@ -128,15 +96,6 @@
     />
 
     <!-- 編輯彈窗組件 -->
-    <TodoDialog
-      v-model:visible="dialogFormVisible"
-      :title="dialogTitle"
-      :form="form"
-      :isEditing="isEditing"
-      @cancel="closeDialog"
-      @confirm="confirmEdit"
-      @delete="handleDeleteTodo"
-      @toggle-done="handleToggleTodo"
-    />
+    <TodoDialog />
   </div>
 </template>

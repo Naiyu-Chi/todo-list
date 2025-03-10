@@ -1,39 +1,63 @@
 <script setup>
   import { ref, computed, onMounted, onUnmounted } from 'vue';
+  import { useTodoStore } from '@/stores/modules/todo';
+  import useDialog from '@/hooks/useDialog';
   import { TIME_STEP } from '~/env.d.ts';
+  
+  const todoStore = useTodoStore();
+  const { 
+    dialogFormVisible, 
+    isEditing, 
+    dialogTitle, 
+    selectedId, 
+    form, 
+    closeDialog, 
+    validateForm,
+    getFormData,
+  } = useDialog();
 
-  // 使用 defineModel 來創建雙向綁定
-  const visible = defineModel('visible', {
-      type: Boolean,
-      default: false
-  });
-
-  // 其他 props
-  const props = defineProps({
-      title: String,
-      form: Object,
-      isEditing: Boolean,
-  });
-
-  const emit = defineEmits(['cancel', 'confirm', 'delete', 'toggle-done']);
-
-  // Handlers
-  function handleCancel() {
-      emit('cancel');
+  // 新增待辦事項
+  function handleAddTask(){
+    const formData = getFormData();
+    if(!validateForm()) return;
+    todoStore.addTodo(formData).then((success)=>{
+      if(success){
+        console.log(formData);
+        closeDialog();
+      }
+    })
   }
 
-  function handleConfirm() {
-      emit('confirm');
+  // 編輯待辦事項
+  function handleEditTask(){
+    const formData = getFormData();
+    if(!validateForm()) return;
+    todoStore.updateTodo(selectedId.value, formData).then((success)=>{
+      if(success){
+        closeDialog();
+      }
+    })
   }
 
+  // 刪除待辦事項
   function handleDelete(){
-    emit('delete')
+    todoStore.deleteTodo(selectedId.value).then((success)=>{
+      if(success){
+        closeDialog();
+      }
+    })
   }
 
+  // 切換待辦事項完成狀態
   function handleToggleDone(){
-    emit('toggle-done')
+    todoStore.toggleDone(selectedId.value).then((success)=>{
+      if(success){
+        closeDialog();
+      }
+    })
   }
 
+  // 取得視窗寬度
   const windowWidth = ref(window.innerWidth);
 
   function updateWidth() {
@@ -60,8 +84,8 @@
   
 <template>
   <el-dialog 
-    v-model="visible" 
-    :title="title" 
+    v-model="dialogFormVisible" 
+    :title="dialogTitle" 
     :width="dialogWidth"
   >
     <el-form :model="form" label-position="top">
@@ -116,11 +140,11 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" @click="handleConfirm" v-if="!isEditing">
+        <el-button @click="closeDialog">取消</el-button>
+        <el-button type="primary" @click="handleAddTask" v-if="!isEditing">
           新增
         </el-button>
-        <el-button type="primary" @click="handleConfirm" v-else>
+        <el-button type="primary" @click="handleEditTask" v-else>
           編輯
         </el-button>
         <el-popconfirm title="是否確認刪除?" 

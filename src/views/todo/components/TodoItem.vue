@@ -1,11 +1,12 @@
 <script setup>
-    import { ref, computed } from 'vue';
+    import { ref, computed, onMounted } from 'vue';
     import { useTodoStore } from '@/stores/modules/todo';
     import useTimeCalculations from '@/hooks/useTimeCalculation';
-    const { getStartTimeOffset, getEventDurationInHours } = useTimeCalculations();
     import useDialog from '@/hooks/useDialog';
+    
+    const { getEventDurationInHours, getStartTimeOffset } = useTimeCalculations();
     const todoStore = useTodoStore();
-    const { openDialogForEdit } = useDialog()
+    const { openDialogForEdit } = useDialog();
 
     const props = defineProps({
         todo: Object,
@@ -20,43 +21,33 @@
         }
     });
 
-    const emit = defineEmits(['edit', 'toggleGroup']);
 
-    // 對話框可見性
-    const groupDialogVisible = ref(false);
+    const emit = defineEmits(['edit']);
 
-    /**
-     * 判斷是否為群組
-     */
     const isGroup = computed(() => props.group !== null);
 
-    /**
-     * 獲取群組中的所有事件
-     */
-    const groupEvents = computed(() => isGroup.value ? props.group.events : []);
+    const currentTodo = computed(() => isGroup.value ? props.group.events[0] : props.todo);
 
     /**
-     * 獲取第一個待辦事項
+     * 計算事件持續時間（小時）
      */
-    const firstTodo = computed(() => isGroup.value ? props.group.events[0] : props.todo);
-    const duration = computed(() => getEventDurationInHours(firstTodo.value.startTime, firstTodo.value.endTime));
+    const duration = computed(() => {
+        return getEventDurationInHours(currentTodo.value.startTime, currentTodo.value.endTime);
+    });
 
-    /**
-     * 檢查群組內所有事項是否都已完成
-     */
-    const allGroupItemsCompleted = computed(() => {
-        if (!isGroup.value) return false;
-        if (groupEvents.value.length === 0) return false;
-        return groupEvents.value.every(item => item.done);
+    // 計算高度垂直偏移
+    const startOffset = computed(() => {
+        return getStartTimeOffset(currentTodo.value.startTime);
     });
 
     /**
-     * 根據總分組數計算項目寬度
+     * 計算項目寬度，右邊預留空間新增項目
      * @returns {string} CSS 寬度值
      */
     function getItemWidth() {
-        // 每個時間範圍分組的寬度，預留空間添加更多項目
-        return `${80 / props.total}%`;
+        const propsTotal = props.total > 10 ? 10 : props.total;
+        const widthPercentage = 85 / propsTotal;
+        return `${widthPercentage}%`;
     }
 
     /**
@@ -64,109 +55,79 @@
      * @returns {string} CSS 偏移值
      */
     function getHorizontalOffset() {
-        if (props.total <= 1) return '0';
+        if (props.total <= 1) return '0%';
+        const propsTotal = props.total > 10 ? 10 : props.total;
+        const singleWidth = 85 / propsTotal;
+        const offset = props.position * singleWidth;
+        return `${offset}%`;
+    }
+
+    /**
+     * 計算z-index值，設定右側項目有較高的index
+     * @returns {number} z-index值
+     */
+    function getZIndex() {
+        return 10 + props.position;
+    }
+
+    // 處理待辦事項點擊事件
+    function handleItemClick() {
+        openDialogForEdit(currentTodo.value);
+    }
+
+    const supportsHover = ref(false);
+
+    onMounted(() => {
+        supportsHover.value = window.matchMedia('(hover: hover)').matches;
         
-        // 計算此分組的位置
-        const singleWidth = 80 / props.total;
-        return `${props.position * singleWidth}%`;
-    }
+        const mediaQuery = window.matchMedia('(hover: hover)');
+            mediaQuery.addEventListener('change', (e) => {
+            supportsHover.value = e.matches;
+        });
 
-    /**
-     * 處理待辦事項點擊
-     * @param {Object} todo - 待辦事項
-     */
-    function handleEdit(todo) {
-        console.log("todo..........")
-        emit('edit', todo);
-        closeGroupDialog();
-    }
-
-    /**
-     * 處理分組點擊
-     */
-    function handleGroupClick() {
-        if (isGroup.value && groupEvents.value.length > 1) {
-            groupDialogVisible.value = true;
-        } else {
-            // 如果只有一個項目，直接編輯
-            console.log(firstTodo.value)
-            // emit('edit', firstTodo.value);
-            openDialogForEdit(firstTodo.value);
-        }
-    }
-
-    /**
-     * 關閉分組對話框
-     */
-    function closeGroupDialog() {
-        groupDialogVisible.value = false;
-    }
+        console.log(props.group)
+    });
 </script>
 
 <template>
-    <div 
-        :class="[
-            'todo-item-cell', 
-            { 
-                'completed': !isGroup ? todo.done : allGroupItemsCompleted,
-                'todo-group': isGroup,
-                'multiple-items': isGroup && group.events.length > 1
-            }
-        ]"
-        :style="{ 
-            '--event-duration': duration,
-            '--start-offset': `${getStartTimeOffset()}%`,
-            'width': getItemWidth(),
-            'left': getHorizontalOffset(),
-        }"
-        @click.stop="handleGroupClick">
-        <!-- 單個待辦事項或分組中的第一個待辦事項 -->
-        <div class="todo-content">
-            <div class="todo-time">
-                {{ firstTodo.startTime }} - {{ firstTodo.endTime }}
-            </div>
-            <div class="todo-name">{{ firstTodo.name }}</div>
-            
-            <!-- 分組中的更多項目指示器 -->
-            <div v-if="isGroup && group.events.length > 1" class="more-badge">
-                +{{ group.events.length - 1 }} 個更多
-            </div>
-        </div>
-        
-        <!-- 分組對話框 -->
-        <el-dialog
-            v-model="groupDialogVisible"
-            :title="`${firstTodo.startTime} - ${firstTodo.endTime} 待辦事項`"
-            width="300px"
-            append-to-body
-        >
-        <div class="group-items-list">
-            <div 
-                v-for="(item) in groupEvents" 
-                :key="item.id"
-                class="group-item"
-                :class="{ 'completed': item.done }"
-                @click="handleEdit(item)"
-            >
-                <div class="item-checkbox" @click.stop>
-                    <el-checkbox 
-                        v-model="item.done" 
-                        @change="todoStore.toggleDone(item.id)"
-                    ></el-checkbox>
+    <el-tooltip 
+        placement="top" 
+        :disabled="!supportsHover" 
+        :enterable="false"
+        :show-after="0"
+        :hide-after="0">
+        <template #content>
+            <span>任務時間 : {{ currentTodo.startTime }} - {{ currentTodo.endTime }}</span><br>
+            <span>任務名稱 :{{ currentTodo.name }}</span>
+        </template>
+        <div 
+            class="todo-item-cell"
+            :class="{ 'completed': currentTodo.done }"
+            :style="{ 
+                '--event-duration': duration,
+                '--start-offset': `${startOffset}%`,
+                'width': getItemWidth(),
+                'left': getHorizontalOffset(),
+                'z-index': getZIndex()
+            }"
+            @click.stop="handleItemClick">
+            <!-- 待辦事項內容 -->
+            <div class="todo-content">
+                <div class="todo-time">
+                    {{ currentTodo.startTime }} - {{ currentTodo.endTime }}
                 </div>
-                <div class="item-name">{{ item.name }}</div>
-                <div class="item-status" v-if="item.done">✓</div>
+                <div class="todo-name">{{ currentTodo.name }}</div>
             </div>
         </div>
-        </el-dialog>
-    </div>
+    </el-tooltip>
+
 </template>
 
 <style lang="scss" scoped>
     .todo-item-cell {
         position: absolute;
         top: var(--start-offset);
-        height: calc(var(--event-duration) * 100% - 8px);
+        height: calc(var(--event-duration) * 100% - 8px); 
         padding: 4px 6px;
         background-color: #409eff;
         color: white;
@@ -174,42 +135,21 @@
         font-size: 12px;
         overflow: hidden;
         cursor: pointer;
-        z-index: 10;
         pointer-events: auto;
         transition: all 0.2s ease-in-out;
-        border:1px solid #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        border:2px solid white;
         
         &.completed {
             background-color: #67c23a;
             text-decoration: line-through;
         }
         
-        &.todo-group {
-            background-color: #409eff;
-            
-            &.multiple-items {
-                .more-badge {
-                    display: inline-block;
-                    background-color: rgba(0, 0, 0, 0.2);
-                    border-radius: 12px;
-                    padding: 2px 6px;
-                    font-size: 10px;
-                    margin-top: 2px;
-                }
-            }
-            
-            &.completed {
-                background-color: #67c23a;
-                
-                .more-badge {
-                    background-color: rgba(0, 0, 0, 0.15);
-                }
-            }
-        }
-        
+        /* 滑鼠懸停效果 */
         &:hover {
             filter: brightness(1.1);
-            z-index: 20;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
         }
         
         .todo-time {
@@ -218,54 +158,15 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            opacity: 0.9;
         }
         
         .todo-name {
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
-            font-size: 1rem;
+            font-size: 0.9rem;
             text-overflow: ellipsis;
         }
     }
-
-    .group-items-list {
-        max-height: 300px;
-        overflow-y: auto;
-        
-        .group-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            margin-bottom: 4px;
-            background-color: #f5f7fa;
-            border-radius: 4px;
-            cursor: pointer;
-            
-            &:hover {
-                background-color: #ecf5ff;
-            }
-            
-            &.completed {
-                text-decoration: line-through;
-                color: #67c23a;
-            }
-            
-            .item-name {
-                flex: 1;
-            }
-            
-            .item-status {
-                margin-left: 8px;
-                color: #67c23a;
-            }
-        }
-    }
-
-    .item-checkbox {
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-        }
 </style>

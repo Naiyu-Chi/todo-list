@@ -1,24 +1,24 @@
-import { ref, reactive } from "vue";
+import { ref, reactive, readonly } from "vue";
 import type { Todo, Form } from "@/types";
 import useTimeCalculation from "@/hooks/useTimeCalculation";
 import useFormValidate from "@/hooks/useFormValidate";
+
+// 對話框狀態
+const dialogFormVisible = ref<boolean>(false);
+const isEditing = ref<boolean>(false);
+const dialogTitle = ref<string>("");
+const selectedId = ref<string>("");
+
+// 表單資料
+const form = reactive<Partial<Form>>({
+  name: "",
+  date: null,
+  startTime: "00:00",
+  endTime: "00:00",
+});
+
 export default function useDialog() {
   const { getCurrentRoundedTime, getDefaultEndTime } = useTimeCalculation();
-
-  // 對話框狀態
-  const dialogFormVisible = ref<boolean>(false);
-  const isEditing = ref<boolean>(false);
-  const dialogTitle = ref<string>("");
-  const selectedId = ref<string>("");
-
-  // 表單資料
-  const form = reactive<Partial<Form>>({
-    name: "",
-    date: null,
-    startTime: "00:00",
-    endTime: "00:00",
-  });
-
   const { validateForm } = useFormValidate(ref(form));
 
   /**
@@ -99,12 +99,14 @@ export default function useDialog() {
     date: string | null;
     startTime?: string;
     endTime?: string;
+    done?: boolean;
   } {
     return {
       name: form.name,
       date: form.date,
       startTime: form.startTime,
       endTime: form.endTime,
+      done: form.done,
     };
   }
 
